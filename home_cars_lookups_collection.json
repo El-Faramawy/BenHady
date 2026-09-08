@@ -1,0 +1,467 @@
+{
+  "info": {
+    "_postman_id": "benhady-home-cars-lookups-v1",
+    "name": "BenHady - Home, Cars & Lookups",
+    "description": "Postman Collection containing the latest endpoints for BenHady: Home, Cars (Listing, Filtering, Details), Lookups (Categories, Brands, Cities, Model Years, Transmissions, Fuel Types), and Policies.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Home",
+      "item": [
+        {
+          "name": "Home Data",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/home",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "home"
+              ]
+            },
+            "description": "Fetch aggregated Home screen data (categories, brands, featured cars, handpicked cars)."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"code\": 200,\n  \"data\": {\n    \"categories\": [\n      {\n        \"id\": 1,\n        \"name_ar\": \"اقتصادية\",\n        \"name_en\": \"Economy\",\n        \"icon\": \"categories/economy.png\"\n      }\n    ],\n    \"brands\": [\n      {\n        \"id\": 1,\n        \"name_ar\": \"تويوتا\",\n        \"name_en\": \"Toyota\",\n        \"logo\": \"brands/toyota.png\"\n      }\n    ],\n    \"featured_cars\": [],\n    \"handpicked_cars\": []\n  },\n  \"messages\": [],\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cars",
+      "item": [
+        {
+          "name": "List / Filter Cars",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cars?category_id=1&brand_id=1&city_id=1&branch_id=1&model_year_id=1&transmission_id=1&fuel_type_id=1&min_price=100&max_price=500&seats=5&search=كامري&sort_by=price&sort_order=asc&per_page=15&page=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cars"
+              ],
+              "query": [
+                {
+                  "key": "category_id",
+                  "value": "1",
+                  "description": "Filter by category ID"
+                },
+                {
+                  "key": "brand_id",
+                  "value": "1",
+                  "description": "Filter by brand ID"
+                },
+                {
+                  "key": "city_id",
+                  "value": "1",
+                  "description": "Filter by city ID"
+                },
+                {
+                  "key": "branch_id",
+                  "value": "1",
+                  "description": "Filter by specific branch ID"
+                },
+                {
+                  "key": "model_year_id",
+                  "value": "1",
+                  "description": "Filter by model year ID"
+                },
+                {
+                  "key": "transmission_id",
+                  "value": "1",
+                  "description": "Filter by transmission ID"
+                },
+                {
+                  "key": "fuel_type_id",
+                  "value": "1",
+                  "description": "Filter by fuel type ID"
+                },
+                {
+                  "key": "min_price",
+                  "value": "100",
+                  "description": "Minimum daily rental price"
+                },
+                {
+                  "key": "max_price",
+                  "value": "500",
+                  "description": "Maximum daily rental price"
+                },
+                {
+                  "key": "seats",
+                  "value": "5",
+                  "description": "Minimum seat capacity"
+                },
+                {
+                  "key": "search",
+                  "value": "كامري",
+                  "description": "Keyword search across car name and brand"
+                },
+                {
+                  "key": "sort_by",
+                  "value": "price",
+                  "description": "Sort field: price, year, created_at"
+                },
+                {
+                  "key": "sort_order",
+                  "value": "asc",
+                  "description": "Sort direction: asc or desc"
+                },
+                {
+                  "key": "per_page",
+                  "value": "15",
+                  "description": "Items per page (1-50)"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                }
+              ]
+            },
+            "description": "Paginated list of cars with multi-criteria filters and sorting."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"code\": 200,\n  \"data\": {\n    \"current_page\": 1,\n    \"data\": [\n      {\n        \"id\": 1,\n        \"name_ar\": \"تويوتا كامري 2025\",\n        \"name_en\": \"Toyota Camry 2025\",\n        \"seats\": 5,\n        \"daily_price\": \"220.00\",\n        \"brand\": {\n          \"id\": 1,\n          \"name_ar\": \"تويوتا\",\n          \"name_en\": \"Toyota\",\n          \"logo\": \"brands/toyota.png\"\n        },\n        \"category\": {\n          \"id\": 1,\n          \"name_ar\": \"سيدان\",\n          \"name_en\": \"Sedan\"\n        }\n      }\n    ],\n    \"total\": 1,\n    \"per_page\": 15\n  },\n  \"messages\": [],\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Car Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cars/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cars",
+                "1"
+              ]
+            },
+            "description": "Fetch car full details, gallery images, features, branch info, and similar cars."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"code\": 200,\n  \"data\": {\n    \"car\": {\n      \"id\": 1,\n      \"name_ar\": \"تويوتا كامري 2025\",\n      \"name_en\": \"Toyota Camry 2025\",\n      \"seats\": 5,\n      \"daily_price\": \"220.00\",\n      \"description_ar\": \"سيارة سيدان مريحة واقتصادية...\",\n      \"description_en\": \"Comfortable and economical sedan...\",\n      \"status\": \"available\",\n      \"brand\": {\"id\": 1, \"name_ar\": \"تويوتا\", \"name_en\": \"Toyota\"},\n      \"category\": {\"id\": 1, \"name_ar\": \"سيدان\", \"name_en\": \"Sedan\"},\n      \"branch\": {\"id\": 1, \"name_ar\": \"فرع مطار الملك خالد\", \"city\": {\"name_ar\": \"الرياض\"}},\n      \"images\": [],\n      \"features\": []\n    },\n    \"similar_cars\": []\n  },\n  \"messages\": [],\n  \"errors\": []\n}"
+            },
+            {
+              "name": "Car Not Found Response",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"code\": 404,\n  \"data\": null,\n  \"messages\": [],\n  \"errors\": [\n    \"السيارة غير موجودة\"\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Lookups & Policies",
+      "item": [
+        {
+          "name": "Categories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categories"
+              ]
+            },
+            "description": "List all active car categories."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"code\": 200,\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name_ar\": \"اقتصادية\",\n      \"name_en\": \"Economy\",\n      \"icon\": \"categories/economy.png\"\n    }\n  ],\n  \"messages\": [],\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Brands",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/brands",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "brands"
+              ]
+            },
+            "description": "List all active car brands."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"code\": 200,\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name_ar\": \"تويوتا\",\n      \"name_en\": \"Toyota\",\n      \"logo\": \"brands/toyota.png\"\n    }\n  ],\n  \"messages\": [],\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Cities & Branches",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cities",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cities"
+              ]
+            },
+            "description": "List all active cities with their active branches."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"code\": 200,\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name_ar\": \"الرياض\",\n      \"name_en\": \"Riyadh\",\n      \"branches\": [\n        {\n          \"id\": 1,\n          \"city_id\": 1,\n          \"name_ar\": \"فرع مطار الملك خالد\",\n          \"name_en\": \"King Khalid Airport Branch\",\n          \"address_ar\": \"مطار الملك خالد الدولي، الصالة 5، الرياض\",\n          \"phone\": \"+966112233441\"\n        }\n      ]\n    }\n  ],\n  \"messages\": [],\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Model Years",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/model-years",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "model-years"
+              ]
+            },
+            "description": "List all active model years."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"code\": 200,\n  \"data\": [\n    {\"id\": 1, \"year\": 2026},\n    {\"id\": 2, \"year\": 2025}\n  ],\n  \"messages\": [],\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Transmissions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/transmissions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transmissions"
+              ]
+            },
+            "description": "List all active transmission types."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"code\": 200,\n  \"data\": [\n    {\"id\": 1, \"name_ar\": \"أوتوماتيك\", \"name_en\": \"Automatic\"}\n  ],\n  \"messages\": [],\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Fuel Types",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/fuel-types",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "fuel-types"
+              ]
+            },
+            "description": "List all active fuel types."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"code\": 200,\n  \"data\": [\n    {\"id\": 1, \"name_ar\": \"بنزين 91\", \"name_en\": \"Gasoline 91\"}\n  ],\n  \"messages\": [],\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Rental Policies",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/policies",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "policies"
+              ]
+            },
+            "description": "Retrieve rental policies (insurance, cancellation, tenant instructions)."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"code\": 200,\n  \"data\": {\n    \"id\": 1,\n    \"insurance_policy_ar\": \"...\",\n    \"insurance_policy_en\": \"...\",\n    \"cancellation_policy_ar\": \"...\",\n    \"cancellation_policy_en\": \"...\",\n    \"tenant_instructions_ar\": \"...\",\n    \"tenant_instructions_en\": \"...\"\n  },\n  \"messages\": [],\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    }
+  ]
+}
