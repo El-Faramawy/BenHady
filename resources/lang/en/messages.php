@@ -30,4 +30,8 @@ return [
         'friday'    => 'Friday',
         'saturday'  => 'Saturday',
     ],
+    'notification' => [
+        'not_found'      => 'Notification not found',
+        'delete_success' => 'Notification deleted successfully',
+    ],
 ];

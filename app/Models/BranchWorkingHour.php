@@ -17,8 +17,10 @@ class BranchWorkingHour extends Model
         'branch_id',
         'day_of_week',
         'is_open',
-        'opening_time',
-        'closing_time',
+        'open_at',
+        'close_at',
+        'reservation_start_at',
+        'reservation_close_at',
         'is_24_hours',
     ];
 
@@ -43,13 +45,13 @@ class BranchWorkingHour extends Model
             return true;
         }
 
-        if ($this->opening_time === null || $this->closing_time === null) {
+        if ($this->open_at === null || $this->close_at === null) {
             return true;
         }
 
         $checkTime = substr($time, 0, 5);
-        $opening = substr((string) $this->opening_time, 0, 5);
-        $closing = substr((string) $this->closing_time, 0, 5);
+        $opening = substr((string) $this->open_at, 0, 5);
+        $closing = substr((string) $this->close_at, 0, 5);
 
         if ($opening <= $closing) {
             return $checkTime >= $opening && $checkTime <= $closing;

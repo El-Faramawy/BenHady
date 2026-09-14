@@ -18,7 +18,7 @@ class CategoryRepository
      */
     public function getAllActive(): Collection
     {
-        return $this->model
+        return $this->model 
             ->where('is_active', true)
             ->get();
     }

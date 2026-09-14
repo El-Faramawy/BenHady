@@ -28,8 +28,6 @@ class CarRepository
             ->where('is_active', true)
             ->where('is_featured', true)
             ->with([
-                'brand:id,name_ar,name_en,logo_url',
-                'category:id,name_ar,name_en',
                 'modelYear:id,year',
                 'transmission:id,name_ar,name_en',
                 'fuelType:id,name_ar,name_en',
@@ -50,8 +48,6 @@ class CarRepository
             ->where('is_active', true)
             ->where('is_handpicked', true)
             ->with([
-                'brand:id,name_ar,name_en,logo_url',
-                'category:id,name_ar,name_en',
                 'modelYear:id,year',
                 'transmission:id,name_ar,name_en',
                 'fuelType:id,name_ar,name_en',
@@ -90,15 +86,15 @@ class CarRepository
                             $wh->where(function (Builder $timeQuery) use ($time) {
                                 $timeQuery->where('is_24_hours', true)
                                     ->orWhere(function (Builder $standardTime) use ($time) {
-                                        $standardTime->whereColumn('opening_time', '<=', 'closing_time')
-                                            ->whereTime('opening_time', '<=', $time)
-                                            ->whereTime('closing_time', '>=', $time);
+                                        $standardTime->whereColumn('open_at', '<=', 'close_at')
+                                            ->whereTime('open_at', '<=', $time)
+                                            ->whereTime('close_at', '>=', $time);
                                     })
                                     ->orWhere(function (Builder $overnightTime) use ($time) {
-                                        $overnightTime->whereColumn('opening_time', '>', 'closing_time')
+                                        $overnightTime->whereColumn('open_at', '>', 'close_at')
                                             ->where(function (Builder $orNight) use ($time) {
-                                                $orNight->whereTime('opening_time', '<=', $time)
-                                                    ->orWhereTime('closing_time', '>=', $time);
+                                                $orNight->whereTime('open_at', '<=', $time)
+                                                    ->orWhereTime('close_at', '>=', $time);
                                             });
                                     });
                             });
@@ -130,7 +126,7 @@ class CarRepository
         return $query->paginate($dto->perPage, ['*'], 'page', $dto->page);
     }
 
-    public function findActiveByIdOrFail(int $id): Car
+    public function findActiveByIdOrFail(int $id, ?int $cityId = null): Car
     {
         $car = $this->model
             ->where('id', $id)
@@ -145,11 +141,25 @@ class CarRepository
                 'fuelType:id,name_ar,name_en',
                 'images:id,car_id,image_path,is_primary,sort_order',
                 'features:id,name_ar,name_en,icon',
+                'branches' => function ($query) use ($cityId) {
+                    $query->where('branches.is_active', true)
+                        ->with('city:id,name_ar,name_en');
+
+                    if ($cityId !== null) {
+                        $query->where('branches.city_id', $cityId);
+                    }
+                },
             ])
             ->first();
 
         if (!$car) {
             throw new CarNotFoundException();
+        }
+
+        if ($car->branches->isEmpty() && $car->branch) {
+            if ($cityId === null || $car->branch->city_id === $cityId) {
+                $car->setRelation('branches', collect([$car->branch]));
+            }
         }
 
         return $car;

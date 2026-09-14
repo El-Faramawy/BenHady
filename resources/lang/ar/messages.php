@@ -30,4 +30,8 @@ return [
         'friday'    => 'الجمعة',
         'saturday'  => 'السبت',
     ],
+    'notification' => [
+        'not_found'      => 'الإشعار غير موجود',
+        'delete_success' => 'تم حذف الإشعار بنجاح',
+    ],
 ];

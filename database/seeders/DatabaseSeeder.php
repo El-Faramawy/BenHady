@@ -22,6 +22,8 @@ class DatabaseSeeder extends Seeder
             CategoryAndBrandSeeder::class,
             FeatureSeeder::class,
             CarSeeder::class,
+            SettingSeeder::class,
+            NotificationSeeder::class,
         ]);
     }
 }

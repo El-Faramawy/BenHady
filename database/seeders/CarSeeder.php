@@ -51,6 +51,7 @@ class CarSeeder extends Seeder
                 'brand_id' => $toyota?->id,
                 'category_id' => $sedan?->id,
                 'branch_id' => $branch1?->id,
+                'branch_ids' => array_values(array_filter([$branch1?->id, $branch2?->id])),
                 'model_year_id' => $year2025?->id,
                 'transmission_id' => $auto?->id,
                 'fuel_type_id' => $gas91?->id,
@@ -74,6 +75,7 @@ class CarSeeder extends Seeder
                 'brand_id' => $hyundai?->id,
                 'category_id' => $sedan?->id,
                 'branch_id' => $branch1?->id,
+                'branch_ids' => array_values(array_filter([$branch1?->id])),
                 'model_year_id' => $year2024?->id,
                 'transmission_id' => $auto?->id,
                 'fuel_type_id' => $gas91?->id,
@@ -96,6 +98,7 @@ class CarSeeder extends Seeder
                 'brand_id' => $toyota?->id,
                 'category_id' => $economy?->id,
                 'branch_id' => $branch2?->id,
+                'branch_ids' => array_values(array_filter([$branch2?->id])),
                 'model_year_id' => $year2024?->id,
                 'transmission_id' => $cvt?->id,
                 'fuel_type_id' => $gas91?->id,
@@ -117,6 +120,7 @@ class CarSeeder extends Seeder
                 'brand_id' => $mercedes?->id,
                 'category_id' => $luxury?->id,
                 'branch_id' => $branch1?->id,
+                'branch_ids' => array_values(array_filter([$branch1?->id, $branch2?->id])),
                 'model_year_id' => $year2025?->id,
                 'transmission_id' => $auto?->id,
                 'fuel_type_id' => $gas95?->id,
@@ -139,6 +143,7 @@ class CarSeeder extends Seeder
                 'brand_id' => $kia?->id,
                 'category_id' => $suv?->id,
                 'branch_id' => $branch2?->id,
+                'branch_ids' => array_values(array_filter([$branch2?->id])),
                 'model_year_id' => $year2024?->id,
                 'transmission_id' => $auto?->id,
                 'fuel_type_id' => $hybrid?->id,
@@ -160,12 +165,18 @@ class CarSeeder extends Seeder
 
         foreach ($carsData as $data) {
             $images = $data['images'];
-            unset($data['images']);
+            $branchIds = $data['branch_ids'] ?? [];
+            unset($data['images'], $data['branch_ids']);
 
             $car = Car::firstOrCreate(
                 ['name_en' => $data['name_en']],
                 $data
             );
+
+            // Sync branches
+            if (!empty($branchIds)) {
+                $car->branches()->sync($branchIds);
+            }
 
             // Assign images
             if ($car->images()->count() === 0) {

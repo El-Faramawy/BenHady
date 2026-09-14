@@ -15,8 +15,10 @@ return new class extends Migration
             $table->foreignId('branch_id')->constrained('branches')->cascadeOnDelete();
             $table->string('day_of_week');
             $table->boolean('is_open')->default(true);
-            $table->time('opening_time')->nullable();
-            $table->time('closing_time')->nullable();
+            $table->time('open_at')->nullable();
+            $table->time('close_at')->nullable();
+            $table->time('reservation_start_at')->nullable();
+            $table->time('reservation_close_at')->nullable();
             $table->boolean('is_24_hours')->default(false);
             $table->timestamps();
 

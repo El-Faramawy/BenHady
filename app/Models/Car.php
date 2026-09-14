@@ -78,6 +78,11 @@ class Car extends Model
         return $this->belongsTo(Branch::class);
     }
 
+    public function branches(): BelongsToMany
+    {
+        return $this->belongsToMany(Branch::class, 'car_branch');
+    }
+
     public function modelYear(): BelongsTo
     {
         return $this->belongsTo(ModelYear::class);

@@ -7,7 +7,9 @@ namespace Tests\Feature;
 use App\Models\Brand;
 use App\Models\Car;
 use App\Models\Category;
+use App\Models\Notification;
 use App\Models\RentalPolicy;
+use App\Models\Setting;
 use App\Services\Category\CategoryService;
 use Illuminate\Database\Eloquent\Collection;
 use Tests\TestCase;
@@ -122,5 +124,38 @@ class LocalizedAttributesTest extends TestCase
         $responseDefault = $this->getJson('categories');
         $dataDefault = $responseDefault->json('data.0');
         $this->assertSame('سيدان', $dataDefault['name']);
+    }
+
+    public function test_setting_and_notification_models_return_localized_attributes(): void
+    {
+        $setting = new Setting([
+            'about_us_ar' => 'من نحن',
+            'about_us_en' => 'About Us',
+            'terms_conditions_ar' => 'الشروط',
+            'terms_conditions_en' => 'Terms',
+            'privacy_policy_ar' => 'الخصوصية',
+            'privacy_policy_en' => 'Privacy',
+        ]);
+
+        $notification = new Notification([
+            'title_ar' => 'عنوان',
+            'title_en' => 'Title',
+            'body_ar' => 'نص',
+            'body_en' => 'Body',
+        ]);
+
+        app()->setLocale('ar');
+        $this->assertSame('من نحن', $setting->about_us);
+        $this->assertSame('الشروط', $setting->terms_conditions);
+        $this->assertSame('الخصوصية', $setting->privacy_policy);
+        $this->assertSame('عنوان', $notification->title);
+        $this->assertSame('نص', $notification->body);
+
+        app()->setLocale('en');
+        $this->assertSame('About Us', $setting->about_us);
+        $this->assertSame('Terms', $setting->terms_conditions);
+        $this->assertSame('Privacy', $setting->privacy_policy);
+        $this->assertSame('Title', $notification->title);
+        $this->assertSame('Body', $notification->body);
     }
 }

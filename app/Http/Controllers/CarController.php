@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CarDetailRequest;
 use App\Http\Requests\CarFilterRequest;
 use App\Responses\ApiResponse;
 use App\Services\Car\CarService;
+use App\Services\Car\DTO\CarDetailDTO;
 use App\Services\Car\DTO\CarFilterDTO;
 use Illuminate\Http\JsonResponse;
 
@@ -26,12 +28,13 @@ class CarController extends Controller
             ->create();
     }
 
-    public function show(int $id): JsonResponse
+    public function show(int $id, CarDetailRequest $request): JsonResponse
     {
-        $data = $this->carService->getCarDetails($id);
+        $dto = CarDetailDTO::fromRequest($id, $request);
+        $car = $this->carService->getCarDetails($dto);
 
         return (new ApiResponse())
-            ->setData($data)
+            ->setData($car)
             ->create();
     }
 }

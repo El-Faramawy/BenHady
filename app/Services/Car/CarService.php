@@ -6,6 +6,7 @@ namespace App\Services\Car;
 
 use App\Models\Car;
 use App\Repositories\CarRepository;
+use App\Services\Car\DTO\CarDetailDTO;
 use App\Services\Car\DTO\CarFilterDTO;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
@@ -20,14 +21,12 @@ class CarService
         return $this->carRepository->paginateCars($dto);
     }
 
-    public function getCarDetails(int $id): array
+    public function getCarDetails(CarDetailDTO|int $dto, ?int $cityId = null): Car|array
     {
-        $car = $this->carRepository->findActiveByIdOrFail($id);
-        $similarCars = $this->carRepository->getSimilarCars($car->category_id, $car->id, 4);
+        if (is_int($dto)) {
+            return $this->carRepository->findActiveByIdOrFail($dto, $cityId);
+        }
 
-        return [
-            'car' => $car,
-            'similar_cars' => $similarCars,
-        ];
+        return $this->carRepository->findActiveByIdOrFail($dto->id, $dto->cityId);
     }
 }
