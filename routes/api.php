@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['api', 'lang'])->group(function () {
     // Auth routes
     Route::post('auth/login', [AuthController::class, 'login']);
+    Route::post('auth/register-step-one', [AuthController::class, 'registerStepOne']);
+    Route::post('auth/register-step-two', [AuthController::class, 'registerStepTwo']);
     Route::post('auth/register', [AuthController::class, 'register']);
     Route::post('auth/verify-phone', [AuthController::class, 'verifyPhone']);
     Route::post('auth/resend-phone-otp', [AuthController::class, 'resendPhoneOtp']);

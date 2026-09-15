@@ -7,11 +7,15 @@ namespace App\Http\Controllers;
 use App\Constants\Messages\UserMessages;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\RegisterStepOneRequest;
+use App\Http\Requests\RegisterStepTwoRequest;
 use App\Http\Requests\ResendPhoneOtpRequest;
 use App\Http\Requests\VerifyPhoneRequest;
 use App\Responses\ApiResponse;
 use App\Services\Auth\AuthService;
 use App\Services\Auth\DTO\LoginUserDTO;
+use App\Services\Auth\DTO\RegisterStepOneDTO;
+use App\Services\Auth\DTO\RegisterStepTwoDTO;
 use App\Services\Auth\DTO\RegisterUserDTO;
 use App\Services\Auth\DTO\ResendPhoneOtpDTO;
 use App\Services\Auth\DTO\VerifyPhoneDTO;
@@ -62,6 +66,35 @@ class AuthController extends Controller
         return (new ApiResponse())
             ->setData($data)
             ->setMessages([UserMessages::loginSuccess()])
+            ->create();
+    }
+
+    /**
+     * Register Step 1: Save basic info and dispatch phone OTP.
+     */
+    public function registerStepOne(RegisterStepOneRequest $request): JsonResponse
+    {
+        $dto = RegisterStepOneDTO::fromRequest($request);
+        $data = $this->authService->registerStepOne($dto);
+
+        return (new ApiResponse())
+            ->setData($data)
+            ->setMessages([__('messages.auth.register_step_one_success')])
+            ->create();
+    }
+
+    /**
+     * Register Step 2: Complete registration with password and identity details.
+     */
+    public function registerStepTwo(RegisterStepTwoRequest $request): JsonResponse
+    {
+        $dto = RegisterStepTwoDTO::fromRequest($request);
+        $data = $this->authService->registerStepTwo($dto);
+
+        return (new ApiResponse())
+            ->setCode(Response::HTTP_CREATED)
+            ->setData($data)
+            ->setMessages([UserMessages::registerSuccess()])
             ->create();
     }
 

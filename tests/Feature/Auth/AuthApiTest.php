@@ -8,11 +8,14 @@ use App\Exceptions\Auth\AuthenticationFailedException;
 use App\Exceptions\Auth\InvalidCredentialsException;
 use App\Exceptions\Auth\InvalidVerificationCodeException;
 use App\Exceptions\Auth\OtpResendCooldownException;
+use App\Exceptions\Auth\PhoneNotVerifiedException;
 use App\Exceptions\User\UserNotActiveException;
 use App\Exceptions\User\UserNotFoundException;
 use App\Models\User;
 use App\Services\Auth\AuthService;
 use App\Services\Auth\DTO\LoginUserDTO;
+use App\Services\Auth\DTO\RegisterStepOneDTO;
+use App\Services\Auth\DTO\RegisterStepTwoDTO;
 use App\Services\Auth\DTO\RegisterUserDTO;
 use App\Services\Auth\DTO\ResendPhoneOtpDTO;
 use App\Services\Auth\DTO\VerifyPhoneDTO;
@@ -494,5 +497,259 @@ class AuthApiTest extends TestCase
                     __('messages.auth.invalid_verification_code'),
                 ],
             ]);
+    }
+
+    /**
+     * Test POST auth/register-step-one success with Mockery.
+     */
+    public function test_register_step_one_endpoint_returns_success_with_mocked_service(): void
+    {
+        $mockData = [
+            'id' => 1,
+            'name' => 'Ahmed Samir',
+            'email' => 'ahmed@example.com',
+            'phone' => '966511112222',
+            'date_of_birth' => '1995-05-15',
+            'phone_verified' => false,
+        ];
+
+        $this->mock(AuthService::class, function (MockInterface $mock) use ($mockData) {
+            $mock->shouldReceive('registerStepOne')
+                ->once()
+                ->withArgs(function (RegisterStepOneDTO $dto) {
+                    return $dto->name === 'Ahmed Samir'
+                        && $dto->email === 'ahmed@example.com'
+                        && $dto->phone === '966511112222';
+                })
+                ->andReturn($mockData);
+        });
+
+        $response = $this->postJson('auth/register-step-one', [
+            'name' => 'Ahmed Samir',
+            'email' => 'ahmed@example.com',
+            'phone' => '966511112222',
+            'date_of_birth' => '1995-05-15',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'code' => 200,
+                'data' => $mockData,
+                'messages' => [
+                    __('messages.auth.register_step_one_success'),
+                ],
+                'errors' => [],
+            ]);
+    }
+
+    /**
+     * Test POST auth/register-step-one validation failure without data.
+     */
+    public function test_register_step_one_fails_validation_without_data(): void
+    {
+        $response = $this->postJson('auth/register-step-one', []);
+
+        $response->assertStatus(422)
+            ->assertJsonStructure(['code', 'message']);
+    }
+
+    /**
+     * Test POST auth/register-step-two success with Mockery.
+     */
+    public function test_register_step_two_endpoint_returns_created_with_mocked_service(): void
+    {
+        app('validator')->setPresenceVerifier(new \Illuminate\Validation\DatabasePresenceVerifier(app('db')));
+        User::factory()->create(['phone' => '966511112222']);
+
+        $mockAuthResponse = [
+            'access_token' => 'jwt_token_for_step_two',
+            'token_type' => 'bearer',
+            'expires_in' => 3600,
+            'user' => [
+                'id' => 1,
+                'name' => 'Ahmed Samir',
+                'email' => 'ahmed@example.com',
+                'phone' => '966511112222',
+            ],
+        ];
+
+        $this->mock(AuthService::class, function (MockInterface $mock) use ($mockAuthResponse) {
+            $mock->shouldReceive('registerStepTwo')
+                ->once()
+                ->withArgs(function (RegisterStepTwoDTO $dto) {
+                    return $dto->phone === '966511112222'
+                        && $dto->type === 'national_id'
+                        && $dto->password === 'password123';
+                })
+                ->andReturn($mockAuthResponse);
+        });
+
+        $payload = [
+            'phone' => '966511112222',
+            'type' => 'national_id',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'driving_license_number' => 'DL987654',
+            'license_expiry_date' => '2030-01-01',
+            'id_number' => '1020304050',
+            'id_number_end_date' => '2030-01-01',
+            'version_number' => 'v1',
+        ];
+
+        $response = $this->postJson('auth/register-step-two', $payload);
+
+        $response->assertStatus(201)
+            ->assertJson([
+                'code' => 201,
+                'data' => $mockAuthResponse,
+                'messages' => [
+                    __('messages.user.register_success'),
+                ],
+                'errors' => [],
+            ]);
+    }
+
+    /**
+     * Test POST auth/register-step-two returns 400 when phone is not verified.
+     */
+    public function test_register_step_two_returns_400_when_phone_not_verified(): void
+    {
+        app('validator')->setPresenceVerifier(new \Illuminate\Validation\DatabasePresenceVerifier(app('db')));
+        User::factory()->create(['phone' => '966511112222']);
+
+        $this->mock(AuthService::class, function (MockInterface $mock) {
+            $mock->shouldReceive('registerStepTwo')
+                ->once()
+                ->andThrow(new PhoneNotVerifiedException());
+        });
+
+        $payload = [
+            'phone' => '966511112222',
+            'type' => 'national_id',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'driving_license_number' => 'DL987654',
+            'license_expiry_date' => '2030-01-01',
+            'id_number' => '1020304050',
+            'id_number_end_date' => '2030-01-01',
+            'version_number' => 'v1',
+        ];
+
+        $response = $this->postJson('auth/register-step-two', $payload);
+
+        $response->assertStatus(400)
+            ->assertJson([
+                'code' => 400,
+                'errors' => [
+                    __('messages.auth.phone_not_verified'),
+                ],
+                'messages' => [],
+            ]);
+    }
+
+    /**
+     * Integration test: full 2-step register flow with non-unique email and phone verification guard.
+     */
+    public function test_two_step_registration_full_flow_with_database(): void
+    {
+        app('validator')->setPresenceVerifier(new \Illuminate\Validation\DatabasePresenceVerifier(app('db')));
+
+        // 1. Step 1: Submit initial registration
+        $stepOneResponse = $this->postJson('auth/register-step-one', [
+            'name' => 'First User',
+            'email' => 'shared@example.com',
+            'phone' => '966577778888',
+            'date_of_birth' => '1995-05-15',
+        ]);
+
+        $stepOneResponse->assertStatus(200)
+            ->assertJson([
+                'code' => 200,
+                'messages' => [
+                    __('messages.auth.register_step_one_success'),
+                ],
+            ]);
+
+        $user = User::where('phone', '966577778888')->first();
+        $this->assertNotNull($user);
+        $this->assertFalse((bool) $user->phone_verified);
+        $this->assertSame('1234', $user->code);
+        $this->assertNull($user->password);
+
+        // 2. Non-unique email verification: Another user with SAME email can register step 1
+        $secondUserResponse = $this->postJson('auth/register-step-one', [
+            'name' => 'Second User',
+            'email' => 'shared@example.com',
+            'phone' => '966566665555',
+            'date_of_birth' => '1998-08-20',
+        ]);
+
+        $secondUserResponse->assertStatus(200);
+        $this->assertSame(2, User::where('email', 'shared@example.com')->count());
+
+        // 3. Step 1 updates existing user with same phone
+        $updateResponse = $this->postJson('auth/register-step-one', [
+            'name' => 'First User Updated',
+            'email' => 'shared@example.com',
+            'phone' => '966577778888',
+            'date_of_birth' => '1995-05-15',
+        ]);
+
+        $updateResponse->assertStatus(200);
+        $user->refresh();
+        $this->assertSame('First User Updated', $user->name);
+
+        // 4. Step 2 fails before phone verification
+        $stepTwoPayload = [
+            'phone' => '966577778888',
+            'type' => 'national_id',
+            'password' => 'secret12345',
+            'password_confirmation' => 'secret12345',
+            'driving_license_number' => 'DL555444',
+            'license_expiry_date' => '2032-01-01',
+            'id_number' => '1099887766',
+            'id_number_end_date' => '2032-01-01',
+            'version_number' => 'v1',
+        ];
+
+        $failStepTwo = $this->postJson('auth/register-step-two', $stepTwoPayload);
+        $failStepTwo->assertStatus(400)
+            ->assertJson([
+                'code' => 400,
+                'errors' => [
+                    __('messages.auth.phone_not_verified'),
+                ],
+            ]);
+
+        // 5. Verify phone with OTP code
+        $verifyResponse = $this->postJson('auth/verify-phone', [
+            'phone' => '966577778888',
+            'code' => '1234',
+        ]);
+        $verifyResponse->assertStatus(200);
+
+        $user->refresh();
+        $this->assertTrue((bool) $user->phone_verified);
+        $this->assertNull($user->code);
+
+        // 6. Step 2 succeeds after phone verification
+        $successStepTwo = $this->postJson('auth/register-step-two', $stepTwoPayload);
+        $successStepTwo->assertStatus(201)
+            ->assertJsonStructure([
+                'code',
+                'data' => [
+                    'access_token',
+                    'token_type',
+                    'expires_in',
+                    'user',
+                ],
+                'messages',
+                'errors',
+            ]);
+
+        $user->refresh();
+        $this->assertSame('national_id', $user->type);
+        $this->assertSame('active', $user->status);
+        $this->assertNotNull($user->password);
     }
 }

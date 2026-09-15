@@ -17,6 +17,8 @@ return [
         'invalid_verification_code' => 'Invalid verification code',
         'otp_resent_success' => 'Verification code resent successfully.',
         'otp_cooldown_error' => 'Not enough time has passed to resend the verification code. Please try again later.',
+        'phone_not_verified' => 'Phone number must be verified before completing registration.',
+        'register_step_one_success' => 'Information saved and verification code sent successfully.',
     ],
     'general' => [
         'server_error'     => 'An unexpected error occurred. Please try again later.',

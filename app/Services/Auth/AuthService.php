@@ -9,11 +9,14 @@ use App\Exceptions\Auth\AuthenticationFailedException;
 use App\Exceptions\Auth\InvalidCredentialsException;
 use App\Exceptions\Auth\InvalidVerificationCodeException;
 use App\Exceptions\Auth\OtpResendCooldownException;
+use App\Exceptions\Auth\PhoneNotVerifiedException;
 use App\Exceptions\User\UserNotActiveException;
 use App\Exceptions\User\UserNotFoundException;
 use App\Models\User;
 use App\Repositories\UserRepository;
 use App\Services\Auth\DTO\LoginUserDTO;
+use App\Services\Auth\DTO\RegisterStepOneDTO;
+use App\Services\Auth\DTO\RegisterStepTwoDTO;
 use App\Services\Auth\DTO\RegisterUserDTO;
 use App\Services\Auth\DTO\ResendPhoneOtpDTO;
 use App\Services\Auth\DTO\VerifyPhoneDTO;
@@ -115,6 +118,76 @@ class AuthService
         if ($user->status !== UserStatusEnum::ACTIVE->value) {
             throw new UserNotActiveException();
         }
+
+        $token = auth()->login($user);
+
+        return $this->buildAuthResponse($token, $user);
+    }
+
+    /**
+     * Register Step 1: Create or update user by phone, reset phone verification, and issue OTP.
+     */
+    public function registerStepOne(RegisterStepOneDTO $dto): array
+    {
+        $user = $this->userRepository->findOneBy('phone', $dto->phone);
+
+        $data = [
+            'name' => $dto->name,
+            'email' => $dto->email,
+            'phone' => $dto->phone,
+            'date_of_birth' => $dto->dateOfBirth,
+            'phone_verified' => false,
+        ];
+
+        if ($user) {
+            $this->userRepository->update($user, $data);
+            $user->refresh();
+        } else {
+            $user = $this->userRepository->create($data);
+        }
+
+        $condition = config('services.sms.condition');
+
+        if ($condition === 'test') {
+            $testValue = (string) config('services.sms.test_value');
+            $this->userRepository->update($user, [
+                'code' => $testValue,
+                'code_sent_at' => now(),
+            ]);
+        } else {
+            // todo connect with oursms
+        }
+
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone' => $user->phone,
+            'date_of_birth' => $user->date_of_birth,
+            'phone_verified' => false,
+        ];
+    }
+
+    /**
+     * Register Step 2: Complete registration if user phone is verified.
+     *
+     * @throws UserNotFoundException
+     * @throws PhoneNotVerifiedException
+     */
+    public function registerStepTwo(RegisterStepTwoDTO $dto): array
+    {
+        $user = $this->userRepository->findOneByOrFail('phone', $dto->phone);
+
+        if (!$user->phone_verified) {
+            throw new PhoneNotVerifiedException();
+        }
+
+        $data = $dto->toArray();
+        $data['password'] = Hash::make($dto->password);
+        $data['status'] = UserStatusEnum::ACTIVE->value;
+
+        $this->userRepository->update($user, $data);
+        $user->refresh();
 
         $token = auth()->login($user);
 
