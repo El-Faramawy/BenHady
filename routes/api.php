@@ -20,6 +20,7 @@ Route::middleware(['api', 'lang'])->group(function () {
     Route::post('auth/login', [AuthController::class, 'login']);
     Route::post('auth/register', [AuthController::class, 'register']);
     Route::post('auth/verify-phone', [AuthController::class, 'verifyPhone']);
+    Route::post('auth/resend-phone-otp', [AuthController::class, 'resendPhoneOtp']);
 
     // Public / Unified data routes
     Route::get('home', HomeController::class);

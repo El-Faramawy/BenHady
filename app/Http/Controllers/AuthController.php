@@ -7,11 +7,13 @@ namespace App\Http\Controllers;
 use App\Constants\Messages\UserMessages;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\ResendPhoneOtpRequest;
 use App\Http\Requests\VerifyPhoneRequest;
 use App\Responses\ApiResponse;
 use App\Services\Auth\AuthService;
 use App\Services\Auth\DTO\LoginUserDTO;
 use App\Services\Auth\DTO\RegisterUserDTO;
+use App\Services\Auth\DTO\ResendPhoneOtpDTO;
 use App\Services\Auth\DTO\VerifyPhoneDTO;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -33,6 +35,19 @@ class AuthController extends Controller
 
         return (new ApiResponse())
             ->setMessages([UserMessages::phoneVerifiedSuccess()])
+            ->create();
+    }
+
+    /**
+     * Resend phone verification OTP code.
+     */
+    public function resendPhoneOtp(ResendPhoneOtpRequest $request): JsonResponse
+    {
+        $dto = ResendPhoneOtpDTO::fromRequest($request);
+        $this->authService->resendPhoneOtp($dto);
+
+        return (new ApiResponse())
+            ->setMessages([__('messages.auth.otp_resent_success')])
             ->create();
     }
 

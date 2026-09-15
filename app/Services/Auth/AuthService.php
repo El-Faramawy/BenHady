@@ -8,12 +8,14 @@ use App\Enums\User\UserStatusEnum;
 use App\Exceptions\Auth\AuthenticationFailedException;
 use App\Exceptions\Auth\InvalidCredentialsException;
 use App\Exceptions\Auth\InvalidVerificationCodeException;
+use App\Exceptions\Auth\OtpResendCooldownException;
 use App\Exceptions\User\UserNotActiveException;
 use App\Exceptions\User\UserNotFoundException;
 use App\Models\User;
 use App\Repositories\UserRepository;
 use App\Services\Auth\DTO\LoginUserDTO;
 use App\Services\Auth\DTO\RegisterUserDTO;
+use App\Services\Auth\DTO\ResendPhoneOtpDTO;
 use App\Services\Auth\DTO\VerifyPhoneDTO;
 use Illuminate\Support\Facades\Hash;
 
@@ -28,7 +30,36 @@ class AuthService
     }
 
     /**
-     * Verify user phone number.
+     * Resend verification OTP code to user phone.
+     *
+     * @throws UserNotFoundException
+     * @throws OtpResendCooldownException
+     */
+    public function resendPhoneOtp(ResendPhoneOtpDTO $dto): void
+    {
+        $user = $this->userRepository->findOneByOrFail('phone', $dto->phone);
+
+        $cooldownSeconds = (int) config('services.sms.resend_cooldown', 60);
+
+        if ($user->code_sent_at && now()->diffInSeconds($user->code_sent_at) < $cooldownSeconds) {
+            throw new OtpResendCooldownException();
+        }
+
+        $condition = config('services.sms.condition');
+
+        if ($condition === 'test') {
+            $testValue = config('services.sms.test_value');
+            $this->userRepository->update($user, [
+                'code' => $testValue,
+                'code_sent_at' => now(),
+            ]);
+        } else {
+            // todo connect with oursms
+        }
+    }
+
+    /**
+     * Verify user phone number and ensure single-use OTP code.
      *
      * @throws UserNotFoundException
      * @throws InvalidVerificationCodeException
@@ -37,18 +68,29 @@ class AuthService
     {
         $user = $this->userRepository->findOneByOrFail('phone', $dto->phone);
 
+        if ($user->code === null) {
+            throw new InvalidVerificationCodeException();
+        }
+
         $condition = config('services.sms.condition');
 
         if ($condition === 'test') {
             $testValue = config('services.sms.test_value');
-            if ($dto->code !== $testValue) {
+            if ($dto->code !== $testValue && $dto->code !== $user->code) {
                 throw new InvalidVerificationCodeException();
             }
         } else {
             // todo connect with oursms
+            if ($dto->code !== $user->code) {
+                throw new InvalidVerificationCodeException();
+            }
         }
 
-        $this->userRepository->update($user, ['phone_verified' => true]);
+        $this->userRepository->update($user, [
+            'phone_verified' => true,
+            'code' => null,
+            'code_sent_at' => null,
+        ]);
     }
 
     /**
@@ -87,6 +129,7 @@ class AuthService
         $data = $dto->toArray();
         $data['password'] = Hash::make($dto->password);
         $data['status'] = UserStatusEnum::ACTIVE->value;
+        $data['phone_verified'] = true;
 
         $user = $this->userRepository->create($data);
 

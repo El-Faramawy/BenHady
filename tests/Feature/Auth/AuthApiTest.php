@@ -7,18 +7,22 @@ namespace Tests\Feature\Auth;
 use App\Exceptions\Auth\AuthenticationFailedException;
 use App\Exceptions\Auth\InvalidCredentialsException;
 use App\Exceptions\Auth\InvalidVerificationCodeException;
+use App\Exceptions\Auth\OtpResendCooldownException;
 use App\Exceptions\User\UserNotActiveException;
 use App\Exceptions\User\UserNotFoundException;
 use App\Models\User;
 use App\Services\Auth\AuthService;
 use App\Services\Auth\DTO\LoginUserDTO;
 use App\Services\Auth\DTO\RegisterUserDTO;
+use App\Services\Auth\DTO\ResendPhoneOtpDTO;
 use App\Services\Auth\DTO\VerifyPhoneDTO;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery\MockInterface;
 use Tests\TestCase;
 
 class AuthApiTest extends TestCase
 {
+    use RefreshDatabase;
     /**
      * Test POST auth/login endpoint success path with Mockery.
      */
@@ -309,6 +313,71 @@ class AuthApiTest extends TestCase
     }
 
     /**
+     * Test POST auth/resend-phone-otp endpoint success path with Mockery.
+     */
+    public function test_resend_phone_otp_endpoint_returns_success_with_mocked_service(): void
+    {
+        $this->mockPresenceVerifier(1);
+
+        $this->mock(AuthService::class, function (MockInterface $mock) {
+            $mock->shouldReceive('resendPhoneOtp')
+                ->once()
+                ->withArgs(function (ResendPhoneOtpDTO $dto) {
+                    return $dto->phone === '966588888888';
+                });
+        });
+
+        $response = $this->postJson('auth/resend-phone-otp', [
+            'phone' => '966588888888',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'code' => 200,
+                'messages' => [
+                    __('messages.auth.otp_resent_success'),
+                ],
+                'errors' => [],
+            ]);
+    }
+
+    /**
+     * Test POST auth/resend-phone-otp when service throws OtpResendCooldownException.
+     */
+    public function test_resend_phone_otp_endpoint_returns_400_on_cooldown(): void
+    {
+        $this->mockPresenceVerifier(1);
+
+        $this->mock(AuthService::class, function (MockInterface $mock) {
+            $mock->shouldReceive('resendPhoneOtp')
+                ->once()
+                ->andThrow(new OtpResendCooldownException());
+        });
+
+        $response = $this->postJson('auth/resend-phone-otp', [
+            'phone' => '966588888888',
+        ]);
+
+        $response->assertStatus(400)
+            ->assertJson([
+                'code' => 400,
+                'errors' => [__('messages.auth.otp_cooldown_error')],
+                'messages' => [],
+            ]);
+    }
+
+    /**
+     * Test POST auth/resend-phone-otp fails validation when phone is missing.
+     */
+    public function test_resend_phone_otp_fails_validation_when_phone_missing(): void
+    {
+        $response = $this->postJson('auth/resend-phone-otp', []);
+
+        $response->assertStatus(422)
+            ->assertJsonStructure(['code', 'message']);
+    }
+
+    /**
      * Test POST auth/logout endpoint success with Mockery.
      */
     public function test_logout_endpoint_returns_success_with_mocked_service(): void
@@ -345,5 +414,85 @@ class AuthApiTest extends TestCase
         $response = $this->postJson('auth/logout');
 
         $response->assertStatus(401);
+    }
+
+    /**
+     * Integration test: resend phone OTP updates DB, checks cooldown, and verify-phone clears code ensuring single use.
+     */
+    public function test_resend_otp_updates_db_and_verify_clears_code_ensuring_single_use(): void
+    {
+        // Restore real database presence verifier for this integration test
+        app('validator')->setPresenceVerifier(new \Illuminate\Validation\DatabasePresenceVerifier(app('db')));
+
+        // 1. Create user in database without verified phone
+        $user = User::factory()->create([
+            'phone' => '966509998877',
+            'phone_verified' => false,
+            'code' => null,
+            'code_sent_at' => null,
+        ]);
+
+        // 2. Call resend-phone-otp
+        $resendResponse = $this->postJson('auth/resend-phone-otp', [
+            'phone' => '966509998877',
+        ]);
+
+        $resendResponse->assertStatus(200)
+            ->assertJson([
+                'code' => 200,
+                'messages' => [
+                    __('messages.auth.otp_resent_success'),
+                ],
+            ]);
+
+        $user->refresh();
+        $this->assertSame('1234', $user->code);
+        $this->assertNotNull($user->code_sent_at);
+
+        // 3. Immediately calling resend again should fail due to cooldown (400)
+        $cooldownResponse = $this->postJson('auth/resend-phone-otp', [
+            'phone' => '966509998877',
+        ]);
+
+        $cooldownResponse->assertStatus(400)
+            ->assertJson([
+                'code' => 400,
+                'errors' => [
+                    __('messages.auth.otp_cooldown_error'),
+                ],
+            ]);
+
+        // 4. Verify phone with correct code
+        $verifyResponse = $this->postJson('auth/verify-phone', [
+            'phone' => '966509998877',
+            'code' => '1234',
+        ]);
+
+        $verifyResponse->assertStatus(200)
+            ->assertJson([
+                'code' => 200,
+                'messages' => [
+                    __('messages.user.phone_verified_success'),
+                ],
+            ]);
+
+        $user->refresh();
+        $this->assertTrue((bool) $user->phone_verified);
+        $this->assertNull($user->code);
+        $this->assertNull($user->code_sent_at);
+
+        // 5. Calling verify again with the same code must fail (single-use integrity)
+        $replayResponse = $this->postJson('auth/verify-phone', [
+            'phone' => '966509998877',
+            'code' => '1234',
+        ]);
+
+        $replayResponse->assertStatus(400)
+            ->assertJson([
+                'code' => 400,
+                'errors' => [
+                    __('messages.auth.invalid_verification_code'),
+                ],
+            ]);
     }
 }

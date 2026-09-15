@@ -44,6 +44,8 @@ class User extends Authenticatable implements JWTSubject
         'language',
         'status',
         'phone_verified',
+        'code',
+        'code_sent_at',
         'licence_verified',
         'id_verified',
         'wallet',
@@ -69,6 +71,7 @@ class User extends Authenticatable implements JWTSubject
     {
         return [
             'email_verified_at' => 'datetime',
+            'code_sent_at' => 'datetime',
             'password' => 'hashed',
         ];
     }

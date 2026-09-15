@@ -162,6 +162,7 @@ Route → Middleware → FormRequest (validation) → Controller → DTO → Ser
 - ✅ **DO** write clean, meaningful comments only when non-obvious business logic requires explanation
 - ✅ **DO** import classes via `use` statements at the top of the file and use short class names instead of inline Fully Qualified Class Names (FQN) in both code signatures and PHPDoc / docblock annotations (e.g., `use Illuminate\Contracts\Validation\ValidationRule;` instead of `\Illuminate\Contracts\Validation\ValidationRule`)
 - ✅ **DO** update `apidog_collection.json` (OpenAPI 3.0.1) whenever adding or modifying API endpoints, using `multipart/form-data` as the default request body content format.
+- ✅ **DO** omit any leading slash (`/`) when writing endpoint paths in collection files (e.g., use `{{base_url}}auth/login` instead of `{{base_url}}/auth/login`), because the trailing slash is already included in `base_url`.
 - ✅ **DO** always read `.env` variables through configuration files using the `config()` helper (e.g., `config('services.sms.condition')`), never use `env()` directly in the code to ensure caching works correctly.
 
 ---

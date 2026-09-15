@@ -15,6 +15,8 @@ return [
         'forbidden'           => 'You do not have permission to access this resource',
         'invalid_credentials' => 'Invalid credentials',
         'invalid_verification_code' => 'Invalid verification code',
+        'otp_resent_success' => 'Verification code resent successfully.',
+        'otp_cooldown_error' => 'Not enough time has passed to resend the verification code. Please try again later.',
     ],
     'general' => [
         'server_error'     => 'An unexpected error occurred. Please try again later.',
