@@ -20,6 +20,13 @@
     <!-- Marked.js for Markdown Parsing -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+            document.documentElement.className = savedTheme;
+        })();
+    </script>
+
     <style>
         :root {
             --bg-body: #090d16;
@@ -38,6 +45,214 @@
             --accent-amber: #f59e0b;
             --accent-rose: #f43f5e;
             --accent-indigo: #6366f1;
+        }
+
+        html.light {
+            --bg-body: #f8fafc;
+            --bg-sidebar: #ffffff;
+            --bg-card: #ffffff;
+            --bg-card-hover: #f1f5f9;
+            --bg-code: #0b1120;
+            --border-color: #e2e8f0;
+            --border-glow: rgba(59, 130, 246, 0.15);
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --text-subtle: #94a3b8;
+            --primary: #2563eb;
+            --primary-glow: rgba(37, 99, 235, 0.25);
+        }
+
+        /* Light Mode Specific Overrides */
+        html.light .sidebar-header {
+            background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+        }
+
+        html.light .brand-title {
+            background: linear-gradient(135deg, #0f172a 0%, #2563eb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        html.light .search-input {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #0f172a;
+        }
+
+        html.light .search-input:focus {
+            background: #ffffff;
+            border-color: var(--primary);
+        }
+
+        html.light .nav-item {
+            color: #475569;
+        }
+
+        html.light .nav-item:hover {
+            color: #0f172a;
+            background: rgba(15, 23, 42, 0.05);
+        }
+
+        html.light .nav-item.level-2 {
+            color: #0f172a;
+            border-bottom-color: #e2e8f0;
+        }
+
+        html.light .nav-item.active {
+            color: var(--primary);
+            background: rgba(37, 99, 235, 0.08);
+            border-left: 3px solid var(--primary);
+        }
+
+        html.light .sidebar-footer {
+            background: #f8fafc;
+        }
+
+        html.light .btn-action {
+            background: #ffffff;
+            border-color: #cbd5e1;
+            color: #475569;
+        }
+
+        html.light .btn-action:hover {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        html.light .mobile-header {
+            background: #ffffff;
+        }
+
+        html.light .top-banner {
+            background: linear-gradient(135deg, #eff6ff 0%, #f1f5f9 100%);
+            border-color: #bfdbfe;
+        }
+
+        html.light .banner-info h2 {
+            color: #0f172a;
+        }
+
+        html.light .banner-info p {
+            color: #475569;
+        }
+
+        html.light .base-url-pill {
+            background: #ffffff;
+            border-color: #cbd5e1;
+            color: #0284c7;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        html.light #content h1,
+        html.light #content h2 {
+            color: #0f172a;
+            border-bottom-color: #e2e8f0;
+        }
+
+        html.light #content h3 {
+            color: #1d4ed8;
+        }
+
+        html.light #content h4 {
+            color: #334155;
+        }
+
+        html.light #content p,
+        html.light #content ul,
+        html.light #content ol {
+            color: #334155;
+        }
+
+        html.light #content hr {
+            border-top-color: #e2e8f0;
+        }
+
+        html.light #content blockquote {
+            background: #f1f5f9;
+            border-left-color: var(--primary);
+            color: #475569;
+        }
+
+        html.light #content table {
+            background: #ffffff;
+            border-color: #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        html.light #content th {
+            background: #f8fafc;
+            color: #0f172a;
+            border-bottom-color: #e2e8f0;
+        }
+
+        html.light #content td {
+            color: #334155;
+            border-bottom-color: #e2e8f0;
+        }
+
+        html.light #content tr:nth-child(even) td {
+            background: #f8fafc;
+        }
+
+        html.light #content tr:hover td {
+            background: rgba(37, 99, 235, 0.04);
+        }
+
+        html.light #content p code,
+        html.light #content li code,
+        html.light #content td code {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border-color: #bfdbfe;
+        }
+
+        html.light #btn-back-top {
+            background: #ffffff;
+            border-color: #cbd5e1;
+            color: #0f172a;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        html.light #btn-back-top:hover {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            border-radius: 0.5rem;
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .theme-toggle:hover {
+            color: var(--text-main);
+            border-color: var(--primary);
+            background: rgba(59, 130, 246, 0.12);
+        }
+
+        html.dark .sun-icon {
+            display: block;
+        }
+        html.dark .moon-icon {
+            display: none;
+        }
+
+        html.light .sun-icon {
+            display: none;
+        }
+        html.light .moon-icon {
+            display: block;
         }
 
         * {
@@ -302,6 +517,26 @@
         }
 
         /* Markdown Rendered Content Styling */
+        #content a {
+            color: #38bdf8;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.15s ease;
+        }
+
+        #content a:hover {
+            color: #7dd3fc;
+            text-decoration: underline;
+        }
+
+        html.light #content a {
+            color: #0284c7;
+        }
+
+        html.light #content a:hover {
+            color: #0369a1;
+        }
+
         #content h1 {
             font-size: 2.25rem;
             font-weight: 800;
@@ -329,7 +564,7 @@
             font-weight: 600;
             margin-top: 2rem;
             margin-bottom: 0.85rem;
-            color: #93c5fd;
+            color: #60a5fa;
             scroll-margin-top: 2rem;
         }
 
@@ -416,10 +651,10 @@
             background: rgba(59, 130, 246, 0.06);
         }
 
-        /* Code Blocks */
+        /* Code Blocks - Crisp Dark Container with High-Contrast Syntax Colors */
         #content pre {
-            background: var(--bg-code);
-            border: 1px solid var(--border-color);
+            background: #0b1120 !important;
+            border: 1px solid #1e293b !important;
             border-radius: 0.6rem;
             padding: 1.2rem;
             overflow-x: auto;
@@ -428,17 +663,45 @@
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.85rem;
             box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+            color: #f8fafc !important;
         }
 
-        #content code {
+        #content pre code,
+        #content pre .hljs {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.85em;
+            color: #f8fafc !important;
+            background: transparent !important;
+        }
+
+        /* Highlight.js Explicit High-Contrast Token Colors in Both Themes */
+        #content pre .hljs-attr,
+        #content pre .hljs-attribute {
+            color: #38bdf8 !important; /* Bright cyan for JSON keys */
+            font-weight: 600;
+        }
+
+        #content pre .hljs-string {
+            color: #4ade80 !important; /* Vibrant pastel green for string values */
+        }
+
+        #content pre .hljs-number,
+        #content pre .hljs-literal {
+            color: #fb923c !important; /* Bright warm orange for numbers & booleans */
+        }
+
+        #content pre .hljs-keyword {
+            color: #c084fc !important; /* Bright purple for keywords */
+        }
+
+        #content pre .hljs-comment {
+            color: #64748b !important; /* Readable slate for comments */
         }
 
         #content p code, #content li code, #content td code {
-            background: rgba(59, 130, 246, 0.12);
-            color: #93c5fd;
-            border: 1px solid rgba(59, 130, 246, 0.2);
+            background: rgba(56, 189, 248, 0.12);
+            color: #7dd3fc;
+            border: 1px solid rgba(56, 189, 248, 0.25);
             padding: 0.15rem 0.4rem;
             border-radius: 0.3rem;
             font-weight: 500;
@@ -449,9 +712,9 @@
             position: absolute;
             top: 0.6rem;
             right: 0.6rem;
-            background: rgba(30, 41, 59, 0.8);
-            border: 1px solid var(--border-color);
-            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #e2e8f0;
             border-radius: 0.35rem;
             padding: 0.25rem 0.6rem;
             font-size: 0.72rem;
@@ -480,27 +743,51 @@
         }
 
         .badge-get {
-            background: rgba(59, 130, 246, 0.15);
-            color: #60a5fa;
-            border: 1px solid rgba(59, 130, 246, 0.4);
+            background: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+            border: 1px solid rgba(147, 197, 253, 0.4);
         }
 
         .badge-post {
-            background: rgba(16, 185, 129, 0.15);
-            color: #34d399;
-            border: 1px solid rgba(16, 185, 129, 0.4);
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+            border: 1px solid rgba(110, 231, 183, 0.4);
         }
 
         .badge-put {
-            background: rgba(245, 158, 11, 0.15);
-            color: #fbbf24;
-            border: 1px solid rgba(245, 158, 11, 0.4);
+            background: rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+            border: 1px solid rgba(252, 211, 77, 0.4);
         }
 
         .badge-delete {
-            background: rgba(244, 63, 94, 0.15);
-            color: #fb7185;
-            border: 1px solid rgba(244, 63, 94, 0.4);
+            background: rgba(244, 63, 94, 0.2);
+            color: #fda4af;
+            border: 1px solid rgba(253, 164, 175, 0.4);
+        }
+
+        html.light .badge-get {
+            background: rgba(37, 99, 235, 0.1);
+            color: #1d4ed8;
+            border: 1px solid rgba(37, 99, 235, 0.3);
+        }
+
+        html.light .badge-post {
+            background: rgba(5, 150, 105, 0.1);
+            color: #047857;
+            border: 1px solid rgba(5, 150, 105, 0.3);
+        }
+
+        html.light .badge-put {
+            background: rgba(217, 119, 6, 0.1);
+            color: #b45309;
+            border: 1px solid rgba(217, 119, 6, 0.3);
+        }
+
+        html.light .badge-delete {
+            background: rgba(225, 29, 72, 0.1);
+            color: #be123c;
+            border: 1px solid rgba(225, 29, 72, 0.3);
         }
 
         /* Floating back to top */
@@ -572,7 +859,25 @@
             </svg>
         </button>
         <span class="brand-title" style="font-size: 1.1rem;">BenHady API</span>
-        <a href="{{ url('api_docs.md') }}" class="btn-action" style="padding: 0.35rem 0.6rem;">.MD</a>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <button class="theme-toggle" title="Toggle Light/Dark Theme" aria-label="Toggle Theme">
+                <svg class="sun-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+                <svg class="moon-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </button>
+            <a href="{{ url('api_docs.md') }}" class="btn-action" style="padding: 0.35rem 0.6rem;">.MD</a>
+        </div>
     </div>
 
     <!-- Sidebar -->
@@ -587,7 +892,25 @@
                     </svg>
                     <span>BenHady</span>
                 </div>
-                <span class="badge-version">v1.0 API</span>
+                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                    <span class="badge-version">v1.0</span>
+                    <button class="theme-toggle" title="Toggle Light/Dark Theme" aria-label="Toggle Theme">
+                        <svg class="sun-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                        <svg class="moon-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
             <div class="search-box">
                 <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -789,6 +1112,26 @@
                 if (e.target.classList.contains('nav-item') && window.innerWidth <= 1024) {
                     sidebar.classList.remove('open');
                 }
+            });
+
+            // Theme Switcher Event Listeners
+            const htmlTag = document.documentElement;
+            function updateTheme(newTheme) {
+                if (newTheme === 'light') {
+                    htmlTag.classList.remove('dark');
+                    htmlTag.classList.add('light');
+                } else {
+                    htmlTag.classList.remove('light');
+                    htmlTag.classList.add('dark');
+                }
+                localStorage.setItem('theme', newTheme);
+            }
+
+            document.querySelectorAll('.theme-toggle').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const isLight = htmlTag.classList.contains('light');
+                    updateTheme(isLight ? 'dark' : 'light');
+                });
             });
 
             // Back to Top Button
