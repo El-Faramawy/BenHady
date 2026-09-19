@@ -5,10 +5,13 @@ use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CarController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CityController;
+use App\Http\Controllers\ContactController;
+use App\Http\Controllers\FaqController;
 use App\Http\Controllers\FuelTypeController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ModelYearController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PhoneTokenController;
 use App\Http\Controllers\PolicyController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\TransmissionController;
@@ -20,7 +23,6 @@ Route::middleware(['api', 'lang'])->group(function () {
     Route::post('auth/login', [AuthController::class, 'login']);
     Route::post('auth/register-step-one', [AuthController::class, 'registerStepOne']);
     Route::post('auth/register-step-two', [AuthController::class, 'registerStepTwo']);
-    Route::post('auth/register', [AuthController::class, 'register']);
     Route::post('auth/verify-phone', [AuthController::class, 'verifyPhone']);
     Route::post('auth/resend-phone-otp', [AuthController::class, 'resendPhoneOtp']);
 
@@ -36,6 +38,8 @@ Route::middleware(['api', 'lang'])->group(function () {
     Route::get('fuel-types', [FuelTypeController::class, 'index']);
     Route::get('policies', [PolicyController::class, 'index']);
     Route::get('settings', [SettingController::class, 'index']);
+    Route::get('faqs', [FaqController::class, 'index']);
+    Route::post('contact-us', [ContactController::class, 'send']);
 
     // Authenticated user routes
     Route::middleware('auth:api')->group(function () {
@@ -46,5 +50,7 @@ Route::middleware(['api', 'lang'])->group(function () {
         Route::get('notifications', [NotificationController::class, 'index']);
         Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount']);
         Route::delete('notifications', [NotificationController::class, 'destroy']);
+        Route::post('phone-tokens', [PhoneTokenController::class, 'store']);
+        Route::delete('phone-tokens', [PhoneTokenController::class, 'destroy']);
     });
 });

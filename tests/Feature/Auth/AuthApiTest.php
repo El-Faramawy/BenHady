@@ -16,7 +16,6 @@ use App\Services\Auth\AuthService;
 use App\Services\Auth\DTO\LoginUserDTO;
 use App\Services\Auth\DTO\RegisterStepOneDTO;
 use App\Services\Auth\DTO\RegisterStepTwoDTO;
-use App\Services\Auth\DTO\RegisterUserDTO;
 use App\Services\Auth\DTO\ResendPhoneOtpDTO;
 use App\Services\Auth\DTO\VerifyPhoneDTO;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -185,76 +184,6 @@ class AuthApiTest extends TestCase
                 'code' => 422,
                 'message' => 'The identifier field is required.',
             ]);
-    }
-
-    /**
-     * Test POST auth/register endpoint success path with Mockery.
-     */
-    public function test_register_endpoint_returns_created_status_with_mocked_service(): void
-    {
-        $mockRegisterResponse = [
-            'access_token' => 'mocked_registered_token',
-            'token_type' => 'bearer',
-            'expires_in' => 3600,
-            'user' => [
-                'id' => 1,
-                'name' => 'New User',
-                'email' => 'newuser@example.com',
-                'phone' => '966599999999',
-                'type' => 'national_id',
-                'status' => 'active',
-            ],
-        ];
-
-        $this->mock(AuthService::class, function (MockInterface $mock) use ($mockRegisterResponse) {
-            $mock->shouldReceive('registerUser')
-                ->once()
-                ->withArgs(function (RegisterUserDTO $dto) {
-                    return $dto->name === 'New User'
-                        && $dto->email === 'newuser@example.com'
-                        && $dto->phone === '966599999999';
-                })
-                ->andReturn($mockRegisterResponse);
-        });
-
-        $payload = [
-            'name' => 'New User',
-            'email' => 'newuser@example.com',
-            'phone' => '966599999999',
-            'date_of_birth' => '1995-05-15',
-            'type' => 'national_id',
-            'password' => 'password123',
-            'password_confirmation' => 'password123',
-            'driving_license_number' => 'DL123456',
-            'license_expiry_date' => '2030-01-01',
-            'id_number' => '1020304050',
-            'id_number_end_date' => '2030-01-01',
-            'version_number' => 'v1',
-        ];
-
-        $response = $this->postJson('auth/register', $payload);
-
-        $response->assertStatus(201)
-            ->assertJson([
-                'code' => 201,
-                'data' => $mockRegisterResponse,
-                'messages' => [
-                    __('messages.user.register_success'),
-                ],
-                'errors' => [],
-            ]);
-    }
-
-    /**
-     * Test POST auth/register validation errors.
-     */
-    public function test_register_endpoint_fails_validation_without_required_fields(): void
-    {
-        $response = $this->postJson('auth/register', []);
-
-        $response->assertStatus(422)
-            ->assertJsonPath('code', 422)
-            ->assertJsonStructure(['code', 'message']);
     }
 
     /**

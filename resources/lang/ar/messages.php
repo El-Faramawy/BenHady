@@ -35,7 +35,12 @@ return [
         'saturday'  => 'السبت',
     ],
     'notification' => [
-        'not_found'      => 'الإشعار غير موجود',
-        'delete_success' => 'تم حذف الإشعار بنجاح',
+        'not_found'             => 'الإشعار غير موجود',
+        'delete_success'        => 'تم حذف الإشعار بنجاح',
+        'token_saved_success'   => 'تم حفظ رمز الجهاز بنجاح',
+        'token_deleted_success' => 'تم حذف رمز الجهاز بنجاح',
+    ],
+    'contact' => [
+        'sent_success' => 'تم إرسال رسالتك بنجاح، سنتواصل معك قريباً',
     ],
 ];

@@ -111,6 +111,12 @@ return [
         'city_id'                => 'city',
         'pickup_date'            => 'pickup date',
         'pickup_time'            => 'pickup time',
+        'token'                  => 'token',
+        'phone_token'            => 'device token',
+        'fcm_token'              => 'FCM token',
+        'subject'                => 'subject',
+        'booking_number'         => 'booking number',
+        'message'                => 'message',
     ],
 
 ];

@@ -10,4 +10,14 @@ class NotificationMessages
     {
         return __('messages.notification.delete_success');
     }
+
+    public static function tokenSavedSuccess(): string
+    {
+        return __('messages.notification.token_saved_success');
+    }
+
+    public static function tokenDeletedSuccess(): string
+    {
+        return __('messages.notification.token_deleted_success');
+    }
 }

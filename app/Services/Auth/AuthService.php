@@ -17,7 +17,6 @@ use App\Repositories\UserRepository;
 use App\Services\Auth\DTO\LoginUserDTO;
 use App\Services\Auth\DTO\RegisterStepOneDTO;
 use App\Services\Auth\DTO\RegisterStepTwoDTO;
-use App\Services\Auth\DTO\RegisterUserDTO;
 use App\Services\Auth\DTO\ResendPhoneOtpDTO;
 use App\Services\Auth\DTO\VerifyPhoneDTO;
 use Illuminate\Support\Facades\Hash;
@@ -188,23 +187,6 @@ class AuthService
 
         $this->userRepository->update($user, $data);
         $user->refresh();
-
-        $token = auth()->login($user);
-
-        return $this->buildAuthResponse($token, $user);
-    }
-
-    /**
-     * Register a new user and return token data.
-     */
-    public function registerUser(RegisterUserDTO $dto): array
-    {
-        $data = $dto->toArray();
-        $data['password'] = Hash::make($dto->password);
-        $data['status'] = UserStatusEnum::ACTIVE->value;
-        $data['phone_verified'] = true;
-
-        $user = $this->userRepository->create($data);
 
         $token = auth()->login($user);
 

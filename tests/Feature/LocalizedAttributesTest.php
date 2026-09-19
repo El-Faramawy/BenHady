@@ -157,5 +157,25 @@ class LocalizedAttributesTest extends TestCase
         $this->assertSame('Privacy', $setting->privacy_policy);
         $this->assertSame('Title', $notification->title);
         $this->assertSame('Body', $notification->body);
+
+        // Verify that localized raw columns are included in serialized array (like Car model)
+        $settingArray = $setting->toArray();
+        $this->assertArrayHasKey('about_us_ar', $settingArray);
+        $this->assertArrayHasKey('about_us_en', $settingArray);
+        $this->assertArrayHasKey('about_us', $settingArray);
+        $this->assertArrayHasKey('terms_conditions_ar', $settingArray);
+        $this->assertArrayHasKey('terms_conditions_en', $settingArray);
+        $this->assertArrayHasKey('terms_conditions', $settingArray);
+        $this->assertArrayHasKey('privacy_policy_ar', $settingArray);
+        $this->assertArrayHasKey('privacy_policy_en', $settingArray);
+        $this->assertArrayHasKey('privacy_policy', $settingArray);
+
+        $notificationArray = $notification->toArray();
+        $this->assertArrayHasKey('title_ar', $notificationArray);
+        $this->assertArrayHasKey('title_en', $notificationArray);
+        $this->assertArrayHasKey('title', $notificationArray);
+        $this->assertArrayHasKey('body_ar', $notificationArray);
+        $this->assertArrayHasKey('body_en', $notificationArray);
+        $this->assertArrayHasKey('body', $notificationArray);
     }
 }

@@ -31,17 +31,6 @@ class Notification extends Model
     /**
      * @var list<string>
      */
-    protected $hidden = [
-        'title_ar',
-        'title_en',
-        'body_ar',
-        'body_en',
-        'updated_at',
-    ];
-
-    /**
-     * @var list<string>
-     */
     protected $appends = [
         'title',
         'body',

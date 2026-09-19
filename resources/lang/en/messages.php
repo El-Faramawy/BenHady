@@ -35,7 +35,12 @@ return [
         'saturday'  => 'Saturday',
     ],
     'notification' => [
-        'not_found'      => 'Notification not found',
-        'delete_success' => 'Notification deleted successfully',
+        'not_found'             => 'Notification not found',
+        'delete_success'        => 'Notification deleted successfully',
+        'token_saved_success'   => 'Token saved successfully',
+        'token_deleted_success' => 'Token deleted successfully',
+    ],
+    'contact' => [
+        'sent_success' => 'Your message has been sent successfully, we will contact you soon.',
     ],
 ];

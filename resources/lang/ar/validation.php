@@ -130,6 +130,12 @@ return [
         'city_id'                => 'المدينة',
         'pickup_date'            => 'تاريخ الاستلام',
         'pickup_time'            => 'وقت الاستلام',
+        'token'                  => 'رمز الجهاز',
+        'phone_token'            => 'رمز الهاتف',
+        'fcm_token'              => 'رمز الإشعار',
+        'subject'                => 'سبب التواصل',
+        'booking_number'         => 'رقم الحجز',
+        'message'                => 'الرسالة',
     ],
 
 ];

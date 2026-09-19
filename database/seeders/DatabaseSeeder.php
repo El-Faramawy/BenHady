@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             CarSeeder::class,
             SettingSeeder::class,
             NotificationSeeder::class,
+            FaqSeeder::class,
         ]);
     }
 }

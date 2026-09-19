@@ -30,20 +30,6 @@ class Setting extends Model
     /**
      * @var list<string>
      */
-    protected $hidden = [
-        'about_us_ar',
-        'about_us_en',
-        'terms_conditions_ar',
-        'terms_conditions_en',
-        'privacy_policy_ar',
-        'privacy_policy_en',
-        'created_at',
-        'updated_at',
-    ];
-
-    /**
-     * @var list<string>
-     */
     protected $appends = [
         'about_us',
         'terms_conditions',

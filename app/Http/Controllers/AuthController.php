@@ -6,7 +6,6 @@ namespace App\Http\Controllers;
 
 use App\Constants\Messages\UserMessages;
 use App\Http\Requests\LoginRequest;
-use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\RegisterStepOneRequest;
 use App\Http\Requests\RegisterStepTwoRequest;
 use App\Http\Requests\ResendPhoneOtpRequest;
@@ -16,7 +15,6 @@ use App\Services\Auth\AuthService;
 use App\Services\Auth\DTO\LoginUserDTO;
 use App\Services\Auth\DTO\RegisterStepOneDTO;
 use App\Services\Auth\DTO\RegisterStepTwoDTO;
-use App\Services\Auth\DTO\RegisterUserDTO;
 use App\Services\Auth\DTO\ResendPhoneOtpDTO;
 use App\Services\Auth\DTO\VerifyPhoneDTO;
 use Illuminate\Http\JsonResponse;
@@ -90,21 +88,6 @@ class AuthController extends Controller
     {
         $dto = RegisterStepTwoDTO::fromRequest($request);
         $data = $this->authService->registerStepTwo($dto);
-
-        return (new ApiResponse())
-            ->setCode(Response::HTTP_CREATED)
-            ->setData($data)
-            ->setMessages([UserMessages::registerSuccess()])
-            ->create();
-    }
-
-    /**
-     * Register a new user and return JWT token.
-     */
-    public function register(RegisterRequest $request): JsonResponse
-    {
-        $dto = RegisterUserDTO::fromRequest($request);
-        $data = $this->authService->registerUser($dto);
 
         return (new ApiResponse())
             ->setCode(Response::HTTP_CREATED)
