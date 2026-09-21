@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BookingController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CarController;
 use App\Http\Controllers\CategoryController;
@@ -52,5 +53,11 @@ Route::middleware(['api', 'lang'])->group(function () {
         Route::delete('notifications', [NotificationController::class, 'destroy']);
         Route::post('phone-tokens', [PhoneTokenController::class, 'store']);
         Route::delete('phone-tokens', [PhoneTokenController::class, 'destroy']);
+
+        // Bookings
+        Route::post('bookings', [BookingController::class, 'store']);
+        Route::get('bookings/active', [BookingController::class, 'activeBookings']);
+        Route::get('bookings/closed', [BookingController::class, 'closedBookings']);
+        Route::get('bookings/{id}', [BookingController::class, 'show']);
     });
 });

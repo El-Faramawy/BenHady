@@ -117,6 +117,12 @@ return [
         'subject'                => 'subject',
         'booking_number'         => 'booking number',
         'message'                => 'message',
+        'car_id'                 => 'car',
+        'pickup_branch_id'       => 'pickup branch',
+        'return_branch_id'       => 'return branch',
+        'pickup_at'              => 'pickup date and time',
+        'return_at'              => 'return date and time',
+        'notes'                  => 'additional notes',
     ],
 
 ];

@@ -41,4 +41,8 @@ return [
         'resend_cooldown' => (int) env('SMS_RESEND_COOLDOWN', 60),
     ],
 
+    'booking' => [
+        'booking_number_prefix' => env('BOOKING_PREFIX', 'BH'),
+    ],
+
 ];

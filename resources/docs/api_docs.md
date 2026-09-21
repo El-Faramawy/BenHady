@@ -47,6 +47,11 @@ Welcome to the **BenHady Car Rental API** documentation. This document provides 
   - [9.3 Delete All Notifications](#93-delete-all-notifications)
   - [9.4 Save FCM Phone Token](#94-save-fcm-phone-token)
   - [9.5 Delete FCM Phone Token](#95-delete-fcm-phone-token)
+- [10. Car Bookings](#10-car-bookings)
+  - [10.1 Create Booking](#101-create-booking)
+  - [10.2 Get Active Bookings](#102-get-active-bookings)
+  - [10.3 Get Closed Bookings](#103-get-closed-bookings)
+  - [10.4 Get Booking Details](#104-get-booking-details)
 
 ---
 
@@ -871,3 +876,216 @@ Deletes a specific device token when the user logs out of their device.
   "errors": []
 }
 ```
+
+---
+
+## 10. Car Bookings
+
+All booking endpoints require user authentication (`Authorization: Bearer <token>`). Bookings validate branch opening and closing hours against the **Asia/Riyadh (UTC+3)** timezone and verify vehicle availability and overlap prevention.
+
+### 10.1 Create Booking
+Creates a new car booking request. Automatically calculates duration in days, snapshots daily rental price, validates branch reservation hours, and generates a formatted booking reference (e.g. `BH-2026-00001`).
+
+- **Method**: `POST`
+- **URL**: `bookings`
+- **Auth Required**: Yes (`Bearer <token>`)
+- **Content-Type**: `multipart/form-data`
+
+#### Request Body
+| Parameter | Type | Required | Description | Example |
+|---|---|---|---|---|
+| `car_id` | Integer | Yes | ID of the car to rent | `1` |
+| `pickup_branch_id` | Integer | Yes | ID of pickup branch | `1` |
+| `return_branch_id` | Integer | Yes | ID of return branch | `1` |
+| `pickup_at` | DateTime string | Yes | Pickup date and time (`after:now`) | `2026-09-25 10:00` |
+| `return_at` | DateTime string | Yes | Return date and time (`after:pickup_at`) | `2026-09-28 10:00` |
+| `notes` | String | No | Additional notes or special requests (max: 1000) | `يرجى تجهيز السيارة في الموعد` |
+
+#### Success Response (`201 Created`)
+```json
+{
+  "code": 201,
+  "data": {
+    "id": 1,
+    "booking_number": "BH-2026-00001",
+    "user_id": 1,
+    "car_id": 1,
+    "pickup_branch_id": 1,
+    "return_branch_id": 1,
+    "pickup_at": "2026-09-25T10:00:00.000000Z",
+    "return_at": "2026-09-28T10:00:00.000000Z",
+    "daily_price": "500.00",
+    "total_days": 3,
+    "subtotal": "1500.00",
+    "discount": "0.00",
+    "total": "1500.00",
+    "notes": "يرجى تجهيز السيارة في الموعد",
+    "status": "pending",
+    "status_label": "قيد الانتظار",
+    "created_at": "2026-09-19T12:00:00.000000Z",
+    "updated_at": "2026-09-19T12:00:00.000000Z"
+  },
+  "messages": [
+    "تم إنشاء الحجز بنجاح"
+  ],
+  "errors": []
+}
+```
+
+---
+
+### 10.2 Get Active Bookings
+Retrieves upcoming and active bookings for the authenticated user (`status: pending, active`), ordered by `pickup_at` ascending. Maps to the **حجوزات نشطة** tab in Figma.
+
+- **Method**: `GET`
+- **URL**: `bookings/active`
+- **Auth Required**: Yes (`Bearer <token>`)
+
+#### Success Response (`200 OK`)
+```json
+{
+  "code": 200,
+  "data": [
+    {
+      "id": 1,
+      "booking_number": "BH-2026-00001",
+      "user_id": 1,
+      "car_id": 1,
+      "pickup_branch_id": 1,
+      "return_branch_id": 1,
+      "pickup_at": "2026-09-25T10:00:00.000000Z",
+      "return_at": "2026-09-28T10:00:00.000000Z",
+      "daily_price": "500.00",
+      "total_days": 3,
+      "subtotal": "1500.00",
+      "discount": "0.00",
+      "total": "1500.00",
+      "status": "pending",
+      "status_label": "قيد الانتظار",
+      "car": {
+        "id": 1,
+        "name": "مرسيدس E-Class",
+        "seats": 4,
+        "daily_price": "500.00",
+        "brand": { "id": 1, "name": "مرسيدس" },
+        "model_year": { "id": 1, "year": 2022 },
+        "transmission": { "id": 1, "name": "أوتوماتيك" },
+        "fuel_type": { "id": 1, "name": "بنزين" },
+        "primary_image": [
+          { "id": 1, "car_id": 1, "image_path": "cars/mercedes.png" }
+        ]
+      },
+      "pickup_branch": { "id": 1, "name": "فرع المطار" },
+      "return_branch": { "id": 1, "name": "فرع المطار" }
+    }
+  ],
+  "messages": [],
+  "errors": []
+}
+```
+
+---
+
+### 10.3 Get Closed Bookings
+Retrieves completed and cancelled past bookings for the authenticated user (`status: completed, cancelled`), ordered by `updated_at` descending. Maps to the **حجوزات مغلقة** tab in Figma.
+
+- **Method**: `GET`
+- **URL**: `bookings/closed`
+- **Auth Required**: Yes (`Bearer <token>`)
+
+#### Success Response (`200 OK`)
+```json
+{
+  "code": 200,
+  "data": [
+    {
+      "id": 2,
+      "booking_number": "BH-2026-00002",
+      "status": "completed",
+      "status_label": "مكتمل",
+      "daily_price": "450.00",
+      "total_days": 2,
+      "total": "900.00",
+      "pickup_at": "2026-09-10T10:00:00.000000Z",
+      "return_at": "2026-09-12T10:00:00.000000Z",
+      "car": {
+        "id": 2,
+        "name": "بي إم دبليو الفئة الخامسة",
+        "seats": 5,
+        "model_year": { "id": 2, "year": 2023 }
+      }
+    }
+  ],
+  "messages": [],
+  "errors": []
+}
+```
+
+---
+
+### 10.4 Get Booking Details
+Retrieves complete booking details for a specific booking belonging to the authenticated user. Includes car specifications, branch contact details, pricing breakdown, and timestamps. Maps to the **تفاصيل الحجز** screen in Figma.
+
+- **Method**: `GET`
+- **URL**: `bookings/{id}`
+- **Auth Required**: Yes (`Bearer <token>`)
+
+#### URL Parameters
+| Parameter | Type | Required | Description | Example |
+|---|---|---|---|---|
+| `id` | Integer | Yes | The Booking ID | `1` |
+
+#### Success Response (`200 OK`)
+```json
+{
+  "code": 200,
+  "data": {
+    "id": 1,
+    "booking_number": "BH-2026-00001",
+    "user_id": 1,
+    "car_id": 1,
+    "pickup_branch_id": 1,
+    "return_branch_id": 1,
+    "pickup_at": "2026-09-25T10:00:00.000000Z",
+    "return_at": "2026-09-28T10:00:00.000000Z",
+    "daily_price": "500.00",
+    "total_days": 3,
+    "subtotal": "1500.00",
+    "discount": "0.00",
+    "total": "1500.00",
+    "notes": "يرجى تجهيز السيارة في الموعد",
+    "status": "pending",
+    "status_label": "قيد الانتظار",
+    "created_at": "2026-09-19T12:00:00.000000Z",
+    "updated_at": "2026-09-19T12:00:00.000000Z",
+    "car": {
+      "id": 1,
+      "name": "مرسيدس E-Class",
+      "seats": 4,
+      "daily_price": "500.00",
+      "brand": { "id": 1, "name": "مرسيدس" },
+      "model_year": { "id": 1, "year": 2022 },
+      "transmission": { "id": 1, "name": "أوتوماتيك" },
+      "fuel_type": { "id": 1, "name": "بنزين" },
+      "primary_image": [
+        { "id": 1, "car_id": 1, "image_path": "cars/mercedes.png" }
+      ]
+    },
+    "pickup_branch": {
+      "id": 1,
+      "name": "فرع المطار",
+      "address": "مطار الملك خالد الدولي",
+      "phone": "966500000000"
+    },
+    "return_branch": {
+      "id": 1,
+      "name": "فرع المطار",
+      "address": "مطار الملك خالد الدولي",
+      "phone": "966500000000"
+    }
+  },
+  "messages": [],
+  "errors": []
+}
+```
+

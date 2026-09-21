@@ -43,4 +43,17 @@ return [
     'contact' => [
         'sent_success' => 'Your message has been sent successfully, we will contact you soon.',
     ],
+    'booking' => [
+        'created' => 'Booking created successfully',
+        'not_found' => 'Booking not found',
+        'car_not_available' => 'This car is not available for booking',
+        'branch_closed' => 'Branch is closed at the requested time',
+        'overlap' => 'Car is already booked for this time period',
+    ],
+    'booking_status' => [
+        'pending' => 'Pending',
+        'active' => 'Active',
+        'completed' => 'Completed',
+        'cancelled' => 'Cancelled',
+    ],
 ];

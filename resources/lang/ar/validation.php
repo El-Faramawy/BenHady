@@ -136,6 +136,12 @@ return [
         'subject'                => 'سبب التواصل',
         'booking_number'         => 'رقم الحجز',
         'message'                => 'الرسالة',
+        'car_id'                 => 'السيارة',
+        'pickup_branch_id'       => 'فرع الاستلام',
+        'return_branch_id'       => 'فرع التسليم',
+        'pickup_at'              => 'موعد الاستلام',
+        'return_at'              => 'موعد التسليم',
+        'notes'                  => 'تفاصيل إضافية',
     ],
 
 ];
