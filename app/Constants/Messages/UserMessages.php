@@ -33,4 +33,14 @@ class UserMessages
     {
         return __('messages.user.profile_update_success');
     }
+
+    public static function passwordResetSuccess(): string
+    {
+        return __('messages.user.password_reset_success');
+    }
+
+    public static function accountDeletedSuccess(): string
+    {
+        return __('messages.user.account_deleted_success');
+    }
 }

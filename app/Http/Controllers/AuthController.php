@@ -9,6 +9,7 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterStepOneRequest;
 use App\Http\Requests\RegisterStepTwoRequest;
 use App\Http\Requests\ResendPhoneOtpRequest;
+use App\Http\Requests\ResetPasswordRequest;
 use App\Http\Requests\VerifyPhoneRequest;
 use App\Responses\ApiResponse;
 use App\Services\Auth\AuthService;
@@ -16,6 +17,7 @@ use App\Services\Auth\DTO\LoginUserDTO;
 use App\Services\Auth\DTO\RegisterStepOneDTO;
 use App\Services\Auth\DTO\RegisterStepTwoDTO;
 use App\Services\Auth\DTO\ResendPhoneOtpDTO;
+use App\Services\Auth\DTO\ResetPasswordDTO;
 use App\Services\Auth\DTO\VerifyPhoneDTO;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -33,10 +35,24 @@ class AuthController extends Controller
     public function verifyPhone(VerifyPhoneRequest $request): JsonResponse
     {
         $dto = VerifyPhoneDTO::fromRequest($request);
-        $this->authService->verifyPhone($dto);
+        $data = $this->authService->verifyPhone($dto);
 
         return (new ApiResponse())
+            ->setData($data)
             ->setMessages([UserMessages::phoneVerifiedSuccess()])
+            ->create();
+    }
+
+    /**
+     * Reset user password.
+     */
+    public function resetPassword(ResetPasswordRequest $request): JsonResponse
+    {
+        $dto = ResetPasswordDTO::fromRequest($request);
+        $this->authService->resetPassword($dto);
+
+        return (new ApiResponse())
+            ->setMessages([UserMessages::passwordResetSuccess()])
             ->create();
     }
 

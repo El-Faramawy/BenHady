@@ -17,6 +17,7 @@ use App\Services\Auth\DTO\LoginUserDTO;
 use App\Services\Auth\DTO\RegisterStepOneDTO;
 use App\Services\Auth\DTO\RegisterStepTwoDTO;
 use App\Services\Auth\DTO\ResendPhoneOtpDTO;
+use App\Services\Auth\DTO\ResetPasswordDTO;
 use App\Services\Auth\DTO\VerifyPhoneDTO;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery\MockInterface;
@@ -680,5 +681,149 @@ class AuthApiTest extends TestCase
         $this->assertSame('national_id', $user->type);
         $this->assertSame('active', $user->status);
         $this->assertNotNull($user->password);
+    }
+
+    /**
+     * Test POST auth/reset-password endpoint success path with Mockery.
+     */
+    public function test_reset_password_endpoint_returns_success_with_mocked_service(): void
+    {
+        $this->mockPresenceVerifier(1);
+
+        $this->mock(AuthService::class, function (MockInterface $mock) {
+            $mock->shouldReceive('resetPassword')
+                ->once()
+                ->withArgs(function (ResetPasswordDTO $dto) {
+                    return $dto->phone === '966555112233' && $dto->password === 'newsecretpassword123';
+                });
+        });
+
+        $response = $this->postJson('auth/reset-password', [
+            'phone' => '966555112233',
+            'password' => 'newsecretpassword123',
+            'password_confirmation' => 'newsecretpassword123',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'code' => 200,
+                'messages' => [
+                    __('messages.user.password_reset_success'),
+                ],
+                'errors' => [],
+            ]);
+    }
+
+    /**
+     * Test POST auth/reset-password fails validation when phone or password invalid.
+     */
+    public function test_reset_password_endpoint_fails_validation(): void
+    {
+        $response = $this->postJson('auth/reset-password', [
+            'password' => 'short',
+            'password_confirmation' => 'mismatch',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonStructure(['code', 'message']);
+    }
+
+    /**
+     * Integration test: full reset password flow (resend OTP -> verify phone -> reset password -> login with new password).
+     */
+    public function test_reset_password_full_integration_flow(): void
+    {
+        app('validator')->setPresenceVerifier(new \Illuminate\Validation\DatabasePresenceVerifier(app('db')));
+
+        // 1. Create active user with initial password and no verified OTP
+        $user = User::factory()->create([
+            'phone' => '966555112233',
+            'id_number' => '1020304050',
+            'password' => \Illuminate\Support\Facades\Hash::make('oldpassword123'),
+            'status' => 'active',
+            'phone_verified' => true,
+            'code_verified_at' => null,
+        ]);
+
+        // 2. Attempting reset password before verifying OTP must fail (400)
+        $unverifiedReset = $this->postJson('auth/reset-password', [
+            'phone' => '966555112233',
+            'password' => 'newstrongpassword123',
+            'password_confirmation' => 'newstrongpassword123',
+        ]);
+        $unverifiedReset->assertStatus(400)
+            ->assertJson([
+                'code' => 400,
+                'errors' => [
+                    __('messages.auth.otp_not_verified'),
+                ],
+            ]);
+
+        // 3. Request OTP for reset password
+        $otpResponse = $this->postJson('auth/resend-phone-otp', [
+            'phone' => '966555112233',
+        ]);
+        $otpResponse->assertStatus(200);
+
+        // Still fails if reset password is called before OTP verification
+        $stillUnverified = $this->postJson('auth/reset-password', [
+            'phone' => '966555112233',
+            'password' => 'newstrongpassword123',
+            'password_confirmation' => 'newstrongpassword123',
+        ]);
+        $stillUnverified->assertStatus(400);
+
+        // 4. Verify phone with received OTP code
+        $verifyResponse = $this->postJson('auth/verify-phone', [
+            'phone' => '966555112233',
+            'code' => '1234',
+        ]);
+        $verifyResponse->assertStatus(200);
+
+        $user->refresh();
+        $this->assertNotNull($user->code_verified_at);
+
+        // 5. Reset password with phone and new password
+        $resetResponse = $this->postJson('auth/reset-password', [
+            'phone' => '966555112233',
+            'password' => 'newstrongpassword123',
+            'password_confirmation' => 'newstrongpassword123',
+        ]);
+
+        $resetResponse->assertStatus(200)
+            ->assertJson([
+                'code' => 200,
+                'messages' => [
+                    __('messages.user.password_reset_success'),
+                ],
+            ]);
+
+        // 6. Verification code is consumed: calling reset password again must fail (400)
+        $replayReset = $this->postJson('auth/reset-password', [
+            'phone' => '966555112233',
+            'password' => 'anotherpassword123',
+            'password_confirmation' => 'anotherpassword123',
+        ]);
+        $replayReset->assertStatus(400);
+
+        // 7. Try logging in with old password (should fail 401)
+        $failLogin = $this->postJson('auth/login', [
+            'identifier' => '1020304050',
+            'password' => 'oldpassword123',
+        ]);
+        $failLogin->assertStatus(401);
+
+        // 8. Log in with new password (should succeed 200)
+        $successLogin = $this->postJson('auth/login', [
+            'identifier' => '1020304050',
+            'password' => 'newstrongpassword123',
+        ]);
+        $successLogin->assertStatus(200)
+            ->assertJson([
+                'code' => 200,
+                'messages' => [
+                    __('messages.user.login_success'),
+                ],
+            ]);
     }
 }

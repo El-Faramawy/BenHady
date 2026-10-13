@@ -6,6 +6,7 @@ namespace App\Services\User;
 
 use App\Exceptions\Auth\AuthenticationFailedException;
 use App\Models\User;
+use App\Repositories\PhoneTokenRepository;
 use App\Repositories\UserRepository;
 use App\Services\User\DTO\UpdateProfileDTO;
 use Illuminate\Support\Facades\Hash;
@@ -18,6 +19,7 @@ class UserService
 {
     public function __construct(
         protected UserRepository $userRepository,
+        protected PhoneTokenRepository $phoneTokenRepository,
     ) {
     }
 
@@ -51,5 +53,23 @@ class UserService
         }
 
         return $this->userRepository->update($user, $data);
+    }
+
+    /**
+     * Delete the authenticated user account and their associated tokens.
+     *
+     * @throws AuthenticationFailedException
+     */
+    public function deleteAccount(): void
+    {
+        $user = $this->getAuthenticatedUser();
+
+        $this->phoneTokenRepository->deleteTokensByUserId($user->id);
+
+        if (auth()->check()) {
+            auth()->logout();
+        }
+
+        $this->userRepository->delete($user);
     }
 }

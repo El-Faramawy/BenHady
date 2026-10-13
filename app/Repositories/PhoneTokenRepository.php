@@ -39,4 +39,9 @@ class PhoneTokenRepository
     {
         return $this->model->where('user_id', $userId)->get();
     }
+
+    public function deleteTokensByUserId(int $userId): int
+    {
+        return $this->model->where('user_id', $userId)->delete();
+    }
 }

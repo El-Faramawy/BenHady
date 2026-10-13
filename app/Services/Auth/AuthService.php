@@ -8,6 +8,7 @@ use App\Enums\User\UserStatusEnum;
 use App\Exceptions\Auth\AuthenticationFailedException;
 use App\Exceptions\Auth\InvalidCredentialsException;
 use App\Exceptions\Auth\InvalidVerificationCodeException;
+use App\Exceptions\Auth\OtpNotVerifiedException;
 use App\Exceptions\Auth\OtpResendCooldownException;
 use App\Exceptions\Auth\PhoneNotVerifiedException;
 use App\Exceptions\User\UserNotActiveException;
@@ -18,6 +19,7 @@ use App\Services\Auth\DTO\LoginUserDTO;
 use App\Services\Auth\DTO\RegisterStepOneDTO;
 use App\Services\Auth\DTO\RegisterStepTwoDTO;
 use App\Services\Auth\DTO\ResendPhoneOtpDTO;
+use App\Services\Auth\DTO\ResetPasswordDTO;
 use App\Services\Auth\DTO\VerifyPhoneDTO;
 use Illuminate\Support\Facades\Hash;
 
@@ -54,6 +56,7 @@ class AuthService
             $this->userRepository->update($user, [
                 'code' => $testValue,
                 'code_sent_at' => now(),
+                'code_verified_at' => null,
             ]);
         } else {
             // todo connect with oursms
@@ -66,7 +69,7 @@ class AuthService
      * @throws UserNotFoundException
      * @throws InvalidVerificationCodeException
      */
-    public function verifyPhone(VerifyPhoneDTO $dto): void
+    public function verifyPhone(VerifyPhoneDTO $dto): array
     {
         $user = $this->userRepository->findOneByOrFail('phone', $dto->phone);
 
@@ -92,6 +95,34 @@ class AuthService
             'phone_verified' => true,
             'code' => null,
             'code_sent_at' => null,
+            'code_verified_at' => now(),
+        ]);
+        $user->refresh();
+
+        $token = auth()->login($user);
+
+        return $this->buildAuthResponse($token, $user);
+    }
+
+    /**
+     * Reset user password after phone OTP verification.
+     *
+     * @throws UserNotFoundException
+     * @throws OtpNotVerifiedException
+     */
+    public function resetPassword(ResetPasswordDTO $dto): void
+    {
+        $user = $this->userRepository->findOneByOrFail('phone', $dto->phone);
+
+        $ttlMinutes = (int) config('services.sms.reset_password_ttl', 15);
+
+        if ($user->code_verified_at === null || $user->code_verified_at->addMinutes($ttlMinutes)->isPast()) {
+            throw new OtpNotVerifiedException();
+        }
+
+        $this->userRepository->update($user, [
+            'password' => Hash::make($dto->password),
+            'code_verified_at' => null,
         ]);
     }
 

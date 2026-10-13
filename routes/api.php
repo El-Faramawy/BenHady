@@ -27,6 +27,7 @@ Route::middleware(['api', 'lang'])->group(function () {
     Route::post('auth/register-step-two', [AuthController::class, 'registerStepTwo']);
     Route::post('auth/verify-phone', [AuthController::class, 'verifyPhone']);
     Route::post('auth/resend-phone-otp', [AuthController::class, 'resendPhoneOtp']);
+    Route::post('auth/reset-password', [AuthController::class, 'resetPassword']);
 
     // Public / Unified data routes
     Route::get('home', HomeController::class);
@@ -49,6 +50,8 @@ Route::middleware(['api', 'lang'])->group(function () {
         Route::get('auth/me', [UserController::class, 'me']);
         Route::get('user/me', [UserController::class, 'me']);
         Route::put('user/profile', [UserController::class, 'updateProfile']);
+        Route::delete('user/account', [UserController::class, 'deleteAccount']);
+        Route::delete('auth/account', [UserController::class, 'deleteAccount']);
         Route::get('notifications', [NotificationController::class, 'index']);
         Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount']);
         Route::delete('notifications', [NotificationController::class, 'destroy']);

@@ -57,4 +57,12 @@ class UserRepository
 
         return $user;
     }
+
+    /**
+     * Delete a user.
+     */
+    public function delete(User $user): bool
+    {
+        return (bool) $user->delete();
+    }
 }

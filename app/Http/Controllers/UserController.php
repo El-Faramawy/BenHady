@@ -43,4 +43,16 @@ class UserController extends Controller
             ->setMessages([UserMessages::profileUpdateSuccess()])
             ->create();
     }
+
+    /**
+     * Delete current authenticated user account and all associated tokens.
+     */
+    public function deleteAccount(): JsonResponse
+    {
+        $this->userService->deleteAccount();
+
+        return (new ApiResponse())
+            ->setMessages([UserMessages::accountDeletedSuccess()])
+            ->create();
+    }
 }

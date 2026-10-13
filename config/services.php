@@ -39,6 +39,7 @@ return [
         'condition' => env('SMS_CONDITION', 'live'),
         'test_value' => env('SMS_TEST_VALUE', '1234'),
         'resend_cooldown' => (int) env('SMS_RESEND_COOLDOWN', 60),
+        'reset_password_ttl' => (int) env('SMS_RESET_PASSWORD_TTL', 15),
     ],
 
     'booking' => [

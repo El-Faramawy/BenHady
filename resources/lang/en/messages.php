@@ -7,6 +7,8 @@ return [
         'logout_success'   => 'User logged out successfully',
         'phone_verified_success' => 'Phone verified successfully',
         'profile_update_success' => 'Profile updated successfully',
+        'password_reset_success' => 'Password reset successfully',
+        'account_deleted_success' => 'Account deleted successfully',
         'not_found'        => 'User not found',
         'not_active'       => 'Your account is not activated, please check your email',
     ],
@@ -18,6 +20,7 @@ return [
         'otp_resent_success' => 'Verification code resent successfully.',
         'otp_cooldown_error' => 'Not enough time has passed to resend the verification code. Please try again later.',
         'phone_not_verified' => 'Phone number must be verified before completing registration.',
+        'otp_not_verified' => 'Phone number must be verified via verification code before resetting password.',
         'register_step_one_success' => 'Information saved and verification code sent successfully.',
     ],
     'general' => [
