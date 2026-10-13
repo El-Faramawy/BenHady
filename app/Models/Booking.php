@@ -18,6 +18,8 @@ class Booking extends Model
         'booking_number',
         'user_id',
         'car_id',
+        'coupon_id',
+        'coupon_code',
         'pickup_branch_id',
         'return_branch_id',
         'pickup_at',
@@ -64,6 +66,11 @@ class Booking extends Model
     public function car(): BelongsTo
     {
         return $this->belongsTo(Car::class);
+    }
+
+    public function coupon(): BelongsTo
+    {
+        return $this->belongsTo(Coupon::class);
     }
 
     public function pickupBranch(): BelongsTo

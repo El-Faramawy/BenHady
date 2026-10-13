@@ -7,6 +7,7 @@ use App\Http\Controllers\CarController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CityController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\CouponController;
 use App\Http\Controllers\FaqController;
 use App\Http\Controllers\FuelTypeController;
 use App\Http\Controllers\HomeController;
@@ -59,5 +60,8 @@ Route::middleware(['api', 'lang'])->group(function () {
         Route::get('bookings/active', [BookingController::class, 'activeBookings']);
         Route::get('bookings/closed', [BookingController::class, 'closedBookings']);
         Route::get('bookings/{id}', [BookingController::class, 'show']);
+
+        // Coupons
+        Route::post('coupons/apply', [CouponController::class, 'apply']);
     });
 });

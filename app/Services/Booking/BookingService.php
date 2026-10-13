@@ -14,6 +14,7 @@ use App\Repositories\BookingRepository;
 use App\Repositories\BranchRepository;
 use App\Repositories\CarRepository;
 use App\Services\Booking\DTO\CreateBookingDTO;
+use App\Services\Coupon\CouponService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 
@@ -23,7 +24,8 @@ class BookingService
         protected BookingRepository $bookingRepository,
         protected BranchRepository $branchRepository,
         protected CarRepository $carRepository,
-        protected BranchAvailabilityService $branchAvailabilityService
+        protected BranchAvailabilityService $branchAvailabilityService,
+        protected CouponService $couponService
     ) {
     }
 
@@ -72,8 +74,21 @@ class BookingService
 
         $dailyPrice = (float) $car->daily_price;
         $subtotal = round($dailyPrice * $totalDays, 2);
+
+        $couponId = null;
+        $couponCode = null;
         $discount = 0.00;
-        $total = round($subtotal - $discount, 2);
+        $couponModel = null;
+
+        if ($dto->couponCode !== null && trim($dto->couponCode) !== '') {
+            $couponResult = $this->couponService->validateAndCalculate($dto->couponCode, $subtotal, $dto->userId);
+            $discount = $couponResult->discountAmount;
+            $couponId = $couponResult->coupon->id;
+            $couponCode = $couponResult->coupon->code;
+            $couponModel = $couponResult->coupon;
+        }
+
+        $total = max(0.00, round($subtotal - $discount, 2));
 
         $bookingNumber = $this->bookingRepository->generateBookingNumber();
 
@@ -81,6 +96,8 @@ class BookingService
             'booking_number' => $bookingNumber,
             'user_id' => $dto->userId,
             'car_id' => $dto->carId,
+            'coupon_id' => $couponId,
+            'coupon_code' => $couponCode,
             'pickup_branch_id' => $dto->pickupBranchId,
             'return_branch_id' => $dto->returnBranchId,
             'pickup_at' => $dto->pickupAt,
@@ -93,6 +110,10 @@ class BookingService
             'notes' => $dto->notes,
             'status' => BookingStatusEnum::PENDING->value,
         ]);
+
+        if ($couponModel !== null) {
+            $this->couponService->recordUsage($couponModel, $dto->userId, $booking->id, $discount);
+        }
 
         return $this->bookingRepository->findByIdAndUser($booking->id, $dto->userId);
     }

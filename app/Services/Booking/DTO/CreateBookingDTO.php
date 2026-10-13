@@ -16,6 +16,7 @@ readonly class CreateBookingDTO
         public string $pickupAt,
         public string $returnAt,
         public ?string $notes = null,
+        public ?string $couponCode = null,
     ) {
     }
 
@@ -29,6 +30,7 @@ readonly class CreateBookingDTO
             pickupAt: (string) $request->validated('pickup_at'),
             returnAt: (string) $request->validated('return_at'),
             notes: $request->validated('notes'),
+            couponCode: $request->validated('coupon_code') ? (string) $request->validated('coupon_code') : null,
         );
     }
 
@@ -42,6 +44,7 @@ readonly class CreateBookingDTO
             'pickup_at' => $this->pickupAt,
             'return_at' => $this->returnAt,
             'notes' => $this->notes,
+            'coupon_code' => $this->couponCode,
         ];
     }
 }

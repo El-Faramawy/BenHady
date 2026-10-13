@@ -25,6 +25,7 @@ class CreateBookingRequest extends FormRequest
             'pickup_at' => ['required', 'date', 'after:now'],
             'return_at' => ['required', 'date', 'after:pickup_at'],
             'notes' => ['nullable', 'string', 'max:1000'],
+            'coupon_code' => ['nullable', 'string', 'max:50'],
         ];
     }
 }

@@ -94,4 +94,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(Booking::class);
     }
+
+    public function coupons(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Coupon::class, 'coupon_user')->withTimestamps();
+    }
 }

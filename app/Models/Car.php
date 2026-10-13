@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Car extends Model
 {
@@ -103,9 +104,9 @@ class Car extends Model
         return $this->hasMany(CarImage::class)->orderBy('sort_order', 'asc');
     }
 
-    public function primaryImage(): HasMany
+    public function primaryImage(): HasOne
     {
-        return $this->hasMany(CarImage::class)->where('is_primary', true);
+        return $this->hasOne(CarImage::class)->where('is_primary', true);
     }
 
     public function features(): BelongsToMany

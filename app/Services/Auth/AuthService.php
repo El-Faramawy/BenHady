@@ -43,7 +43,7 @@ class AuthService
 
         $cooldownSeconds = (int) config('services.sms.resend_cooldown', 60);
 
-        if ($user->code_sent_at && now()->diffInSeconds($user->code_sent_at) < $cooldownSeconds) {
+        if ($user->code_sent_at && $user->code_sent_at->addSeconds($cooldownSeconds)->isFuture()) {
             throw new OtpResendCooldownException();
         }
 

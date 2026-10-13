@@ -56,4 +56,14 @@ return [
         'completed' => 'Completed',
         'cancelled' => 'Cancelled',
     ],
+    'coupon' => [
+        'applied' => 'Discount coupon applied successfully',
+        'not_found' => 'Discount coupon not found or invalid',
+        'expired' => 'Discount coupon has expired',
+        'not_started' => 'Discount coupon is not active yet',
+        'limit_reached' => 'Coupon maximum usage limit reached',
+        'user_limit_reached' => 'You have already used this coupon',
+        'min_amount_not_met' => 'Booking total is below the minimum required amount for this coupon',
+        'not_eligible' => 'This coupon is not available for your account',
+    ],
 ];
