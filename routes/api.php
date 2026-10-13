@@ -48,9 +48,7 @@ Route::middleware(['api', 'lang'])->group(function () {
     Route::middleware('auth:api')->group(function () {
         Route::post('auth/logout', [AuthController::class, 'logout']);
         Route::get('auth/me', [UserController::class, 'me']);
-        Route::get('user/me', [UserController::class, 'me']);
         Route::put('user/profile', [UserController::class, 'updateProfile']);
-        Route::delete('user/account', [UserController::class, 'deleteAccount']);
         Route::delete('auth/account', [UserController::class, 'deleteAccount']);
         Route::get('notifications', [NotificationController::class, 'index']);
         Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount']);
