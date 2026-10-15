@@ -9,5 +9,6 @@ Route::get('/', function () {
 
 Route::get('api_docs', [ApiDocsController::class, 'index'])->name('api.docs');
 Route::get('api_docs.md', [ApiDocsController::class, 'raw'])->name('api.docs.raw');
-Route::get('api-docs', fn () => redirect()->route('api.docs'));
+Route::get('api-docs', fn() => redirect()->route('api.docs'));
 
+require __DIR__ . '/admin.php';
