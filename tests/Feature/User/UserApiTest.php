@@ -104,34 +104,9 @@ class UserApiTest extends TestCase
     }
 
     /**
-     * Test DELETE user/account endpoint returns success with mocked service.
+     * Test DELETE auth/account endpoint returns success with mocked service.
      */
     public function test_delete_account_endpoint_returns_success_with_mocked_service(): void
-    {
-        $user = User::factory()->make(['id' => 1]);
-        $this->actingAs($user, 'api');
-
-        $this->mock(UserService::class, function (MockInterface $mock) {
-            $mock->shouldReceive('deleteAccount')
-                ->once();
-        });
-
-        $response = $this->deleteJson('user/account');
-
-        $response->assertStatus(200)
-            ->assertJson([
-                'code' => 200,
-                'messages' => [
-                    __('messages.user.account_deleted_success'),
-                ],
-                'errors' => [],
-            ]);
-    }
-
-    /**
-     * Test DELETE auth/account alias endpoint returns success with mocked service.
-     */
-    public function test_delete_account_alias_endpoint_returns_success_with_mocked_service(): void
     {
         $user = User::factory()->make(['id' => 1]);
         $this->actingAs($user, 'api');
@@ -154,11 +129,11 @@ class UserApiTest extends TestCase
     }
 
     /**
-     * Test DELETE user/account returns 401 when unauthenticated.
+     * Test DELETE auth/account returns 401 when unauthenticated.
      */
     public function test_delete_account_endpoint_returns_401_when_unauthenticated(): void
     {
-        $response = $this->deleteJson('user/account');
+        $response = $this->deleteJson('auth/account');
 
         $response->assertStatus(401);
     }
@@ -190,7 +165,7 @@ class UserApiTest extends TestCase
         $token = auth()->login($user);
 
         $response = $this->withHeaders(['Authorization' => 'Bearer ' . $token])
-            ->deleteJson('user/account');
+            ->deleteJson('auth/account');
 
         $response->assertStatus(200)
             ->assertJson([

@@ -1,23 +1,23 @@
 <?php
 
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\BookingController;
-use App\Http\Controllers\BrandController;
-use App\Http\Controllers\CarController;
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\CityController;
-use App\Http\Controllers\ContactController;
-use App\Http\Controllers\CouponController;
-use App\Http\Controllers\FaqController;
-use App\Http\Controllers\FuelTypeController;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\ModelYearController;
-use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\PhoneTokenController;
-use App\Http\Controllers\PolicyController;
-use App\Http\Controllers\SettingController;
-use App\Http\Controllers\TransmissionController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BookingController;
+use App\Http\Controllers\Api\BrandController;
+use App\Http\Controllers\Api\CarController;
+use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\CityController;
+use App\Http\Controllers\Api\ContactController;
+use App\Http\Controllers\Api\CouponController;
+use App\Http\Controllers\Api\FaqController;
+use App\Http\Controllers\Api\FuelTypeController;
+use App\Http\Controllers\Api\HomeController;
+use App\Http\Controllers\Api\ModelYearController;
+use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\PhoneTokenController;
+use App\Http\Controllers\Api\PolicyController;
+use App\Http\Controllers\Api\SettingController;
+use App\Http\Controllers\Api\TransmissionController;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['api', 'lang'])->group(function () {

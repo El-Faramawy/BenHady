@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Contact\DTO;
 
-use App\Http\Requests\ContactMessageRequest;
+use App\Http\Requests\Contact\ContactMessageRequest;
 
 readonly class ContactMessageDTO
 {
