@@ -123,6 +123,11 @@ return [
         'pickup_at'              => 'pickup date and time',
         'return_at'              => 'return date and time',
         'notes'                  => 'additional notes',
+        'icon'                   => 'icon',
+        'image'                  => 'image',
+        'logo'                   => 'logo',
+        'name_ar'                => 'Arabic name',
+        'name_en'                => 'English name',
     ],
 
 ];

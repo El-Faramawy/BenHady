@@ -30,6 +30,9 @@ return [
         'updated_success'    => 'تم التعديل بنجاح',
         'deleted_success'    => 'تم الحذف بنجاح',
         'cannot_delete_self' => 'لا يمكنك حذف حسابك الشخصي',
+        'active'             => 'مفعل',
+        'inactive'           => 'غير مفعل',
+        'view'               => 'عرض الصورة',
     ],
     'car_not_found' => 'السيارة غير موجودة',
     'days' => [

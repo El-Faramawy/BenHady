@@ -41,4 +41,21 @@
             }
         });
     });
+
+    $(document).on('change', 'input[type="file"]', function () {
+        var input = this;
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var $parent = $(input).closest('.form-group, .col-sm-6, .col-sm-12, div');
+                var $img = $parent.find('img.preview-img, img').first();
+                if ($img.length) {
+                    $img.attr('src', e.target.result);
+                } else {
+                    $parent.append('<div class="mt-2"><img src="' + e.target.result + '" class="preview-img rounded shadow-sm" style="width: 50px; height: 50px; object-fit: cover; border: 1px solid #e2e8f0;" alt="preview"></div>');
+                }
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    });
 </script>

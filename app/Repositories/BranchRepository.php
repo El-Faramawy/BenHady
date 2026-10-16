@@ -7,6 +7,7 @@ namespace App\Repositories;
 use App\Models\Branch;
 use App\Models\BranchWorkingHour;
 use App\Models\Car;
+use Illuminate\Database\Eloquent\Builder;
 
 class BranchRepository
 {
@@ -15,6 +16,36 @@ class BranchRepository
         protected BranchWorkingHour $workingHourModel,
         protected Car $carModel
     ) {
+    }
+
+    public function getDataTableQuery(): Builder
+    {
+        return $this->branchModel->newQuery()->with('city')->latest('id');
+    }
+
+    public function findById(int $id): ?Branch
+    {
+        return $this->branchModel->find($id);
+    }
+
+    public function create(array $data): Branch
+    {
+        return $this->branchModel->create($data);
+    }
+
+    public function update(Branch $branch, array $data): bool
+    {
+        return $branch->update($data);
+    }
+
+    public function delete(Branch $branch): bool
+    {
+        return (bool) $branch->delete();
+    }
+
+    public function deleteMultiple(array $ids): int
+    {
+        return $this->branchModel->whereIn('id', $ids)->delete();
     }
 
     public function findActiveById(int $id): ?Branch

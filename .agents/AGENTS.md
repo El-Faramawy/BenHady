@@ -265,3 +265,72 @@ Route → Middleware → FormRequest (validation) → Controller → DTO → Ser
 - Mock dependencies using helper methods (e.g. `$this->mockService(UserService::class, ['methodName' => $mockData])`).
 - Test both success and failure paths (e.g., status 200, 201, 400, 401, 403, 404, 422).
 - Validate input validations, localized validation error messages, and HTTP status codes via Feature tests.
+
+---
+
+## Admin Dashboard CRUD Architecture & Guidelines
+
+All Admin Dashboard CRUD operations (`routes/admin.php`, controllers, services, repositories, and Blade views) must strictly follow this standardized pattern:
+
+### 1. Request Flow & Layer Responsibilities
+
+```
+Route (admin.php)
+  └── FormRequest (Validation)
+        └── Admin Controller (Thin Controller)
+              └── Service (Business logic, DataTable formatting, Security)
+                    └── Repository (Database queries & Eloquent abstractions)
+                          └── Model (Fillable, Hidden, Casts)
+```
+
+| Layer | Responsibility | Standards / Rules |
+|---|---|---|
+| **Route** | Defines RESTful resource and multi-delete routes | Grouped under `admin` prefix and `admin` middleware. Use explicit actions: `Route::resource('...', XController::class)` and `Route::post('multi_delete_...', [XController::class, 'multiDelete'])`. |
+| **FormRequest** | Input validation and authorization | Place in `app/Http/Requests/Admin/{Domain}/`. Must validate all fields present in forms. Use `MultiDeleteRequest` (`App\Http\Requests\Admin\Common\MultiDeleteRequest`) for batch deletions. |
+| **Controller** | Thin HTTP handler | Only validates via FormRequest, passes validated data to Service, returns View or standard `JsonResponse` with localized message (`__('messages.general.created_success')`). |
+| **Service** | Domain business logic & DataTables | Place in `app/Services/{Domain}/` (e.g., `AdminService`). Prepares DataTable query via Repository, applies helper column formatting (`tableAction`, `tableCheckbox`), enforces security rules (e.g. self-deletion prevention), handles passwords. |
+| **Repository** | Data access layer | Place in `app/Repositories/{Model}Repository.php`. Encapsulates all Eloquent queries (`getDataTableQuery`, `create`, `update`, `delete`, `deleteMultiple`). Never query Eloquent directly in Services or Controllers. |
+| **Model** | Eloquent representation | Enforce `$fillable` whitelisting, `$hidden`, and use `casts()` (e.g. `'password' => 'hashed'`). |
+
+### 2. Standard Blueprint for Dashboard CRUDs
+
+#### A. Controller (`Thin Controller`)
+- Enforce `declare(strict_types=1);` and explicit return types (`View|JsonResponse`, `JsonResponse`, `View`).
+- Constructor injection for the Service.
+- Standard methods:
+  - `index(Request $request): View|JsonResponse`
+  - `create(): View`
+  - `store(StoreXRequest $request): JsonResponse`
+  - `edit(Model $model): View`
+  - `update(UpdateXRequest $request, Model $model): JsonResponse`
+  - `destroy(Model $model): JsonResponse`
+  - `multiDelete(MultiDeleteRequest $request): JsonResponse`
+- Always use `$request->validated()` — NEVER `$request->all()`.
+
+#### B. Service (`Business Logic & DataTables`)
+- Inject the Repository via constructor.
+- `getDataTable(): JsonResponse`:
+  - Retrieves query builder from Repository.
+  - Adds `action` column using `tableAction($model->id, true, true)`.
+  - Adds `checkbox` column using `tableCheckbox($model->id)`.
+  - Escapes columns: `->escapeColumns([])->make(true)`.
+- `store(array $data): Model` and `update(Model $model, array $data): bool`.
+- `delete(Model $model): bool` and `deleteMultiple(array $ids): int`.
+
+#### C. Helpers (`app/Http/helper.php`)
+- `tableAction($id, $edit, $delete, $view = false)`: Generates action buttons for DataTables.
+- `tableCheckbox($id)`: Generates the row checkbox for batch actions (`sub_chk`).
+
+#### D. Batch Deletions (`MultiDeleteRequest`)
+- Always use `App\Http\Requests\Admin\Common\MultiDeleteRequest` for `multiDelete` endpoints.
+- It automatically parses and sanitizes comma-separated string IDs from AJAX into an array of validated integers via `prepareForValidation()`.
+
+#### E. Response & Localization
+- Never hardcode Arabic or English success/error strings in controllers.
+- Use `__('messages.general.created_success')`, `__('messages.general.updated_success')`, `__('messages.general.deleted_success')`.
+- All AJAX forms and delete calls use `handleAjaxError(data)` in `ajax.blade.php` to display toasters consistently.
+
+#### F. Separation of Concerns (Profile vs CRUD)
+- Never put Profile management methods (`profile()`, `update_profile()`) inside Resource CRUD Controllers.
+- Dedicated profile actions belong to `ProfileController` (`routes/admin.php` → `admin_profile`).
+

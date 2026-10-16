@@ -73,13 +73,53 @@
 </style>
 
 <style>
+    /* Table Images Hover Zoom & Preview */
+    .table-img-link {
+        display: inline-block;
+        position: relative;
+        cursor: pointer;
+        text-decoration: none;
+        z-index: 1;
+        transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .table-img-link:hover {
+        transform: scale(2.8);
+        z-index: 99999 !important;
+    }
+    .table-img-link:hover .table-icon-box,
+    .table-img-link:hover img,
+    .table-img-link:hover .table-img {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35) !important;
+        background-color: #ffffff !important;
+        border-radius: 8px !important;
+    }
+    .table-icon-box {
+        border-radius: 8px !important;
+    }
+    table.dataTable tbody td {
+        overflow: visible !important;
+        vertical-align: middle !important;
+    }
+    table td img:not(.table-icon-img) {
+        transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s ease;
+        cursor: pointer;
+        border-radius: 8px !important;
+    }
+    table td img:not(.table-icon-img):hover {
+        transform: scale(2.8);
+        z-index: 99999 !important;
+        position: relative;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35) !important;
+        background-color: #ffffff !important;
+    }
     .img:hover{
-        transform: scale(3)
+        transform: scale(2.8);
     }
     .img{
-        width: 100px!important;
-        height: 70px!important;
-        border-radius: 5px;
+        width: 60px!important;
+        height: 44px!important;
+        border-radius: 8px!important;
+        object-fit: cover!important;
     }
     div#exportexample_filter {
         display: inline-block;

@@ -24,64 +24,40 @@ Route::prefix('admin')->middleware('web')->namespace('App\Http\Controllers\Admin
         Route::resource('admins', 'AdminController');
         Route::post('multi_delete_admins', 'AdminController@multiDelete')->name('admins.multiDelete');
 
-        ################################### users ##########################################
-        Route::resource('users', 'UserController');
-        Route::post('multi_delete_users', 'UserController@multiDelete')->name('users.multiDelete');
-
-        Route::resource('user_invite', 'UserInviteController');
-        Route::post('multi_delete_user_invite', 'UserInviteController@multidelete')->name('user_invite.multiDelete');
-
-        ################################### customers ##########################################
-        Route::resource('admin_customers', 'CustomerController');
-        Route::post('multi_delete_admin_customers', 'CustomerController@multidelete')->name('admin_customers.multiDelete');
-
-        ################################### brands ##########################################
-        Route::resource('brands', 'BrandController');
-        Route::post('multi_delete_brands', 'BrandController@multiDelete')->name('brands.multiDelete');
-        Route::get('brand/status/{id}', 'BrandController@change_status');
-
-        ################################### brand_subscriptions ##########################################
-        Route::resource('brand_subscriptions', 'BrandSubscriptionController');
-        Route::post('multi_delete_brand_subscriptions', 'BrandSubscriptionController@multiDelete')->name('brand_subscriptions.multiDelete');
-
-        ################################### duets ##########################################
-        Route::resource('duets', 'DuetController');
-        Route::post('multi_delete_duets', 'DuetController@multiDelete')->name('duets.multiDelete');
-
-        ################################### ads ##########################################
-        Route::resource('ads', 'AdController');
-        Route::post('multi_delete_ads', 'AdController@multiDelete')->name('ads.multiDelete');
-
-        ################################### categories ##########################################
+        ################################### Categories ##########################################
         Route::resource('categories', 'CategoryController');
         Route::post('multi_delete_categories', 'CategoryController@multiDelete')->name('categories.multiDelete');
 
-        ################################### answers ##########################################
-        Route::resource('answers', 'AnswerController');
-        Route::post('multi_delete_answers', 'AnswerController@multiDelete')->name('answers.multiDelete');
-
-        ################################### questions ##########################################
-        Route::resource('questions', 'QuestionController');
-        Route::post('multi_delete_questions', 'QuestionController@multiDelete')->name('questions.multiDelete');
-
-        ################################### countries ##########################################
-        Route::resource('countries', 'CountryController');
-        Route::post('multi_delete_countries', 'CountryController@multiDelete')->name('countries.multiDelete');
-
-        ################################### cities ##########################################
+        ################################### Cities ##########################################
         Route::resource('cities', 'CityController');
         Route::post('multi_delete_cities', 'CityController@multiDelete')->name('cities.multiDelete');
 
-        ################################### packages ##########################################
-        Route::resource('packages', 'PackageController');
-        Route::post('multi_delete_packages', 'PackageController@multiDelete')->name('packages.multiDelete');
+        ################################### Branches ##########################################
+        Route::resource('branches', 'BranchController');
+        Route::post('multi_delete_branches', 'BranchController@multiDelete')->name('branches.multiDelete');
 
-        ################################### settings ##########################################
+        ################################### Model Years ##########################################
+        Route::resource('model_years', 'ModelYearController');
+        Route::post('multi_delete_model_years', 'ModelYearController@multiDelete')->name('model_years.multiDelete');
+
+        ################################### Transmissions ##########################################
+        Route::resource('transmissions', 'TransmissionController');
+        Route::post('multi_delete_transmissions', 'TransmissionController@multiDelete')->name('transmissions.multiDelete');
+
+        ################################### Fuel Types ##########################################
+        Route::resource('fuel_types', 'FuelTypeController');
+        Route::post('multi_delete_fuel_types', 'FuelTypeController@multiDelete')->name('fuel_types.multiDelete');
+
+        ################################### Features ##########################################
+        Route::resource('features', 'FeatureController');
+        Route::post('multi_delete_features', 'FeatureController@multiDelete')->name('features.multiDelete');
+
+        ################################### FAQs ##########################################
+        Route::resource('faqs', 'FaqController');
+        Route::post('multi_delete_faqs', 'FaqController@multiDelete')->name('faqs.multiDelete');
+
+        ################################### Settings ##########################################
         Route::resource('settings', 'SettingController');
-
-        ################################### profile ##########################################
-        Route::resource('profile', 'ProfileController');
-
     });
 
 

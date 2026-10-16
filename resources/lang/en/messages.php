@@ -30,6 +30,9 @@ return [
         'updated_success'    => 'Updated successfully',
         'deleted_success'    => 'Deleted successfully',
         'cannot_delete_self' => 'You cannot delete your own account',
+        'active'             => 'Active',
+        'inactive'           => 'Inactive',
+        'view'               => 'View image',
     ],
     'car_not_found' => 'Car not found',
     'days' => [

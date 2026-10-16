@@ -26,10 +26,25 @@ if (!function_exists('user_api')) {
 if (!function_exists('get_file')) {
     function get_file($file)
     {
-        if (!is_null($file))
-            return asset($file);
-        else
+        if (empty($file)) {
             return asset('Admin/imgs/default.jpg');
+        }
+
+        if (filter_var($file, FILTER_VALIDATE_URL)) {
+            return $file;
+        }
+
+        if (str_starts_with($file, 'storage/')) {
+            return asset($file);
+        }
+
+        // If file exists in public/
+        if (file_exists(public_path($file)) && !is_dir(public_path($file))) {
+            return asset($file);
+        }
+
+        // Default to storage disk URL
+        return asset('storage/' . $file);
     }
 }
 
@@ -72,3 +87,54 @@ if (!function_exists('tableAction')) {
         return $action;
     }
 }
+
+if (!function_exists('tableStatus')) {
+    function tableStatus(bool $isActive): string
+    {
+        if ($isActive) {
+            return '<span class="badge badge-success px-3 py-2" style="font-size: 11px; font-weight: 600; border-radius: 6px;"><i class="fa fa-check mr-1"></i> ' . __('messages.general.active') . '</span>';
+        }
+        return '<span class="badge badge-danger px-3 py-2" style="font-size: 11px; font-weight: 600; border-radius: 6px;"><i class="fa fa-times mr-1"></i> ' . __('messages.general.inactive') . '</span>';
+    }
+}
+
+if (!function_exists('tableImage')) {
+    function tableImage(?string $path, string $alt = 'thumbnail'): string
+    {
+        $defaultUrl = asset('Admin/imgs/default.jpg');
+        $url = $path ? get_file($path) : $defaultUrl;
+        return '<a href="' . htmlspecialchars((string) $url, ENT_QUOTES, 'UTF-8') . '" target="_blank" class="table-img-link" title="' . __('messages.general.view') . '">' .
+            '<img src="' . htmlspecialchars((string) $url, ENT_QUOTES, 'UTF-8') . '" class="table-img shadow-sm" style="width: 60px; height: 44px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0;" onerror="this.onerror=null;this.src=\'' . $defaultUrl . '\';" alt="' . htmlspecialchars($alt, ENT_QUOTES, 'UTF-8') . '">' .
+            '</a>';
+    }
+}
+
+if (!function_exists('tableIcon')) {
+    function tableIcon(?string $icon, string $fallbackIcon = 'fa fa-sliders'): string
+    {
+        // 1. If empty or null, show fallback badge
+        if (empty($icon)) {
+            return '<div class="d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 60px; height: 44px; border-radius: 8px; background: #eef2ff; color: #4f46e5; border: 1px solid #e0e7ff;"><i class="' . $fallbackIcon . '" style="font-size: 19px;"></i></div>';
+        }
+
+        // 2. If it is a CSS font icon class (e.g. "fa fa-car" or "fe fe-settings")
+        if (str_starts_with($icon, 'fa ') || str_starts_with($icon, 'fe ') || str_starts_with($icon, 'bi ') || str_starts_with($icon, 'mdi ')) {
+            return '<div class="d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 60px; height: 44px; border-radius: 8px; background: #eef2ff; color: #4f46e5; border: 1px solid #e0e7ff;"><i class="' . htmlspecialchars($icon, ENT_QUOTES, 'UTF-8') . '" style="font-size: 19px;"></i></div>';
+        }
+
+        // 3. If it is an inline raw SVG string
+        if (str_starts_with(trim($icon), '<svg')) {
+            return '<div class="table-img-link d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 60px; height: 44px; border-radius: 8px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 4px;">' . $icon . '</div>';
+        }
+
+        // 4. File path or URL
+        $url = get_file($icon);
+        return '<a href="' . htmlspecialchars((string) $url, ENT_QUOTES, 'UTF-8') . '" target="_blank" class="table-img-link" title="' . __('messages.general.view') . '">' .
+            '<div class="d-inline-flex align-items-center justify-content-center shadow-sm table-icon-box" style="width: 60px; height: 44px; border-radius: 8px; background: #f8fafc; border: 1px solid #e2e8f0; vertical-align: middle; padding: 4px;">' .
+            '<img src="' . htmlspecialchars((string) $url, ENT_QUOTES, 'UTF-8') . '" class="table-icon-img" style="width: 100%; height: 100%; max-height: 34px; object-fit: contain;" onerror="this.style.display=\'none\'; if(this.nextElementSibling){this.nextElementSibling.style.display=\'inline-block\';}" alt="icon">' .
+            '<i class="' . $fallbackIcon . ' text-primary" style="display: none; font-size: 19px;"></i>' .
+            '</div>' .
+            '</a>';
+    }
+}
+
