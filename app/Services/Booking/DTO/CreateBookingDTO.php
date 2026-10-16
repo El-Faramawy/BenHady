@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Booking\DTO;
 
-use App\Http\Requests\Booking\CreateBookingRequest;
+use App\Http\Requests\Api\Booking\CreateBookingRequest;
 
 readonly class CreateBookingDTO
 {

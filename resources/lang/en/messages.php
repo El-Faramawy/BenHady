@@ -24,8 +24,12 @@ return [
         'register_step_one_success' => 'Information saved and verification code sent successfully.',
     ],
     'general' => [
-        'server_error'     => 'An unexpected error occurred. Please try again later.',
-        'validation_error' => 'The given data was invalid.',
+        'server_error'       => 'An unexpected error occurred. Please try again later.',
+        'validation_error'   => 'The given data was invalid.',
+        'created_success'    => 'Created successfully',
+        'updated_success'    => 'Updated successfully',
+        'deleted_success'    => 'Deleted successfully',
+        'cannot_delete_self' => 'You cannot delete your own account',
     ],
     'car_not_found' => 'Car not found',
     'days' => [

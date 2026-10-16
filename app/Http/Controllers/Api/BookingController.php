@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Constants\Messages\BookingMessages;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Booking\CreateBookingRequest;
+use App\Http\Requests\Api\Booking\CreateBookingRequest;
 use App\Responses\ApiResponse;
 use App\Services\Booking\BookingService;
 use App\Services\Booking\DTO\CreateBookingDTO;

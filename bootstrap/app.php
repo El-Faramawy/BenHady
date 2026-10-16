@@ -1,6 +1,7 @@
 <?php
 
 use App\Exceptions\BusinessException;
+use App\Http\Middleware\Admin as AdminMiddleware;
 use App\Http\Middleware\Localization;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -22,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'lang' => Localization::class,
+            'admin' => AdminMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -6,12 +6,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Constants\Messages\UserMessages;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
-use App\Http\Requests\Auth\RegisterStepOneRequest;
-use App\Http\Requests\Auth\RegisterStepTwoRequest;
-use App\Http\Requests\Auth\ResendPhoneOtpRequest;
-use App\Http\Requests\Auth\ResetPasswordRequest;
-use App\Http\Requests\Auth\VerifyPhoneRequest;
+use App\Http\Requests\Api\Auth\LoginRequest;
+use App\Http\Requests\Api\Auth\RegisterStepOneRequest;
+use App\Http\Requests\Api\Auth\RegisterStepTwoRequest;
+use App\Http\Requests\Api\Auth\ResendPhoneOtpRequest;
+use App\Http\Requests\Api\Auth\ResetPasswordRequest;
+use App\Http\Requests\Api\Auth\VerifyPhoneRequest;
 use App\Responses\ApiResponse;
 use App\Services\Auth\AuthService;
 use App\Services\Auth\DTO\LoginUserDTO;

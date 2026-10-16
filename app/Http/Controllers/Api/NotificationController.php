@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Constants\Messages\NotificationMessages;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Notification\NotificationFilterRequest;
+use App\Http\Requests\Api\Notification\NotificationFilterRequest;
 use App\Responses\ApiResponse;
 use App\Services\Notification\DTO\NotificationFilterDTO;
 use App\Services\Notification\NotificationService;

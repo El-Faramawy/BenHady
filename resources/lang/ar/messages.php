@@ -24,8 +24,12 @@ return [
         'register_step_one_success' => 'تم حفظ البيانات وإرسال رمز التحقق بنجاح',
     ],
     'general' => [
-        'server_error'     => 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى لاحقاً.',
-        'validation_error' => 'البيانات المدخلة غير صالحة.',
+        'server_error'       => 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى لاحقاً.',
+        'validation_error'   => 'البيانات المدخلة غير صالحة.',
+        'created_success'    => 'تمت الإضافة بنجاح',
+        'updated_success'    => 'تم التعديل بنجاح',
+        'deleted_success'    => 'تم الحذف بنجاح',
+        'cannot_delete_self' => 'لا يمكنك حذف حسابك الشخصي',
     ],
     'car_not_found' => 'السيارة غير موجودة',
     'days' => [

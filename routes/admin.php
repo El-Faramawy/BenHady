@@ -17,8 +17,8 @@ Route::prefix('admin')->middleware('web')->namespace('App\Http\Controllers\Admin
         Route::get('home', 'HomeController@index')->name('admin.home');
 
         ################################### Profile ##########################################
-        Route::get('admin_profile', 'AdminController@profile')->name('admin_profile');
-        Route::post('update-profile', 'AdminController@update_profile')->name('admin_profile.update');
+        Route::get('admin_profile', 'ProfileController@index')->name('admin_profile');
+        Route::post('update-profile', 'ProfileController@update')->name('admin_profile.update');
 
         ################################### Admins ##########################################
         Route::resource('admins', 'AdminController');

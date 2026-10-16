@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Car\CarDetailRequest;
-use App\Http\Requests\Car\CarFilterRequest;
+use App\Http\Requests\Api\Car\CarDetailRequest;
+use App\Http\Requests\Api\Car\CarFilterRequest;
 use App\Responses\ApiResponse;
 use App\Services\Car\CarService;
 use App\Services\Car\DTO\CarDetailDTO;

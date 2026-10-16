@@ -1,109 +1,74 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Admin\StoreAdminRequest;
 use App\Http\Requests\Admin\Admin\UpdateAdminRequest;
-use App\Http\Requests\Admin\Profile\UpdateProfileRequest;
+use App\Http\Requests\Admin\Common\MultiDeleteRequest;
 use App\Models\Admin;
-use App\Http\Controllers\Controller;
+use App\Services\Admin\AdminService;
+use DomainException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
-use Yajra\DataTables\DataTables;
+use Illuminate\View\View;
 
 class AdminController extends Controller
 {
-    public function index(Request $request)
+    public function __construct(protected AdminService $adminService)
+    {
+    }
+
+    public function index(Request $request): View|JsonResponse
     {
         if ($request->ajax()) {
-            $admins = Admin::latest()->where('id', '!=', admin()->user()->id);
-            return Datatables::of($admins)
-                ->addColumn('action', function ($admin) {
-                    return tableAction($admin->id, true,true);
-                })->addColumn('checkbox', function ($admin) {
-                    return '<input type="checkbox" class="sub_chk" data-id="' . $admin->id . '">';
-                })
-                ->escapeColumns([])
-                ->make(true);
+            return $this->adminService->getDataTable();
         }
+
         return view('Admin.Admin.index');
     }
 
-    public function create()
+    public function create(): View
     {
-        return view('Admin.Admin.parts.create')->render();
+        return view('Admin.Admin.parts.create');
     }
 
-    public function store(StoreAdminRequest $request)
+    public function store(StoreAdminRequest $request): JsonResponse
     {
-        $data = $request->all();
-        $data['password'] = Hash::make($request->password);
-        Admin::create($data);
-        return response()->json(['message' => 'تم الاضافة بنجاح ']);
+        $this->adminService->store($request->validated());
+
+        return response()->json(['message' => __('messages.general.created_success')]);
     }
 
-    public function edit(Admin $admin)
+    public function edit(Admin $admin): View
     {
         return view('Admin.Admin.parts.edit', compact('admin'));
     }
 
-    public function update(UpdateAdminRequest $request, Admin $admin)
+    public function update(UpdateAdminRequest $request, Admin $admin): JsonResponse
     {
-        $data = $request->except('password');
+        $this->adminService->update($admin, $request->validated());
 
-        if ($request->password != null)
-            $data['password'] = Hash::make($request->password);
-
-        $admin->update($data);
-
-        return response()->json(['message' => 'تم التعديل بنجاح ']);
+        return response()->json(['message' => __('messages.general.updated_success')]);
     }
 
-    public function destroy(Admin $admin)
+    public function destroy(Admin $admin): JsonResponse
     {
-        $admin->delete();
-        return response()->json(['message' => 'تم الحذف بنجاح']);
-    }
+        try {
+            $this->adminService->delete($admin);
 
-    public function multiDelete(Request $request)
-    {
-        $ids = explode(",", $request->ids);
-        Admin::whereIn('id', $ids)->delete();
-
-        return response()->json(['message' => 'تم الحذف بنجاح']);
-    }
-
-    public function update_profile(UpdateProfileRequest $request)
-    {
-        if (isset($request->password) && $request->password != null) {
-            $valedator = Validator::make($request->all(), [
-                'password' => 'required_with:confirm_password|same:confirm_password',
-                'confirm_password' => 'required'
-            ],
-                [
-                    'password.required_with' => ' كلمة المرور مطلوبة',
-                    'password.same' => 'كلمة المرور و تاكيد كلمة المرور غير متطابقين ',
-                    'confirm_password.required' => 'تاكيد كلمة المرور مطلوب',
-                ]
-            );
-            if ($valedator->fails())
-                return response()->json(['messages' => $valedator->errors()->getMessages()], 422);
+            return response()->json(['message' => __('messages.general.deleted_success')]);
+        } catch (DomainException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
         }
-        $update = Admin::find(\admin()->id());
-        $update->name = $request->name;
-        $update->email = $request->email;
-        if (isset($request->password) && $request->password != '') {
-            $update->password = Hash::make($request->password);
-        }
-        $update->save();
-        return response()->json(['message' => 'تم تعديل البيانات بنجاح']);
     }
 
-    public function profile()
+    public function multiDelete(MultiDeleteRequest $request): JsonResponse
     {
-        return view('Admin.Profile.index');
+        $this->adminService->deleteMultiple($request->validated('ids'));
+
+        return response()->json(['message' => __('messages.general.deleted_success')]);
     }
-
-
 }

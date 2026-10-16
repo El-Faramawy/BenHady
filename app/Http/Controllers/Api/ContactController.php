@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Contact\ContactMessageRequest;
+use App\Http\Requests\Api\Contact\ContactMessageRequest;
 use App\Responses\ApiResponse;
 use App\Services\Contact\ContactService;
 use App\Services\Contact\DTO\ContactMessageDTO;

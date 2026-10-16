@@ -16,11 +16,11 @@ class Admin
     public function handle(Request $request, Closure $next)
     {
         if (Auth::guard('admin')->check()) {
-            if ($request == 'login') {
-                return redirect('admin/home');
+            if ($request->is('admin/login') || $request->routeIs('login')) {
+                return redirect()->route('admin.home');
             }
             return $next($request);
         }
-        return redirect('admin/login');
+        return redirect()->route('login');
     }
 }

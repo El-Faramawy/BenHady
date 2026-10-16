@@ -232,6 +232,10 @@ Route → Middleware → FormRequest (validation) → Controller → DTO → Ser
 - ❌ **DON'T** use generic `Exception` catch when a more specific exception type is available
 - ❌ **DON'T** use inline Fully Qualified Class Names (FQN) in code or PHPDoc annotations (e.g., `\Illuminate\Contracts\Validation\ValidationRule`) — always import classes at the top of the file using `use` statements and use short class names
 
+### Testing
+
+- ❌ **DON'T** write tests for the Admin dashboard / Admin panel (`routes/admin.php`, admin controllers, views, or web routes) — testing is strictly scoped to API endpoints.
+
 ---
 
 ## Naming Conventions
@@ -255,6 +259,7 @@ Route → Middleware → FormRequest (validation) → Controller → DTO → Ser
 ## Testing Standards
 
 - Write **Feature Tests ONLY** (no Unit tests needed) for all API endpoints.
+- **No Admin Dashboard Tests**: Do **NOT** write tests for the Admin dashboard or Admin web panel. Testing is strictly scoped to client/mobile API endpoints (`routes/api.php`).
 - Tests must cover the full request lifecycle from the HTTP route/endpoint down to the JSON response (`Route → Middleware → Request → Controller → Response`).
 - Use **Mockery** to mock underlying Service layer calls and data return structures using `mockService()` (via `Tests\MockeryHelperTrait` in `Tests\TestCase`).
 - Mock dependencies using helper methods (e.g. `$this->mockService(UserService::class, ['methodName' => $mockData])`).

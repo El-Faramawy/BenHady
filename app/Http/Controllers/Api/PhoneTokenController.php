@@ -6,8 +6,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Constants\Messages\NotificationMessages;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\PhoneToken\DeletePhoneTokenRequest;
-use App\Http\Requests\PhoneToken\SavePhoneTokenRequest;
+use App\Http\Requests\Api\PhoneToken\DeletePhoneTokenRequest;
+use App\Http\Requests\Api\PhoneToken\SavePhoneTokenRequest;
 use App\Responses\ApiResponse;
 use App\Services\PhoneToken\DTO\DeletePhoneTokenDTO;
 use App\Services\PhoneToken\DTO\SavePhoneTokenDTO;

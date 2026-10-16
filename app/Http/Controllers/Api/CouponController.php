@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Constants\Messages\CouponMessages;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Coupon\ApplyCouponRequest;
+use App\Http\Requests\Api\Coupon\ApplyCouponRequest;
 use App\Responses\ApiResponse;
 use App\Services\Coupon\CouponService;
 use App\Services\Coupon\DTO\ApplyCouponDTO;

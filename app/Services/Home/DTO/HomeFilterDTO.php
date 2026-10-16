@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Home\DTO;
 
-use App\Http\Requests\Home\HomeRequest;
+use App\Http\Requests\Api\Home\HomeRequest;
 
 readonly class HomeFilterDTO
 {

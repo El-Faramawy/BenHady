@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Home\HomeRequest;
+use App\Http\Requests\Api\Home\HomeRequest;
 use App\Responses\ApiResponse;
 use App\Services\Home\DTO\HomeFilterDTO;
 use App\Services\Home\HomeService;

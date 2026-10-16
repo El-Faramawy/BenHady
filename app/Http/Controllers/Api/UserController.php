@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Constants\Messages\UserMessages;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\User\UpdateProfileRequest;
+use App\Http\Requests\Api\User\UpdateProfileRequest;
 use App\Responses\ApiResponse;
 use App\Services\User\DTO\UpdateProfileDTO;
 use App\Services\User\UserService;
