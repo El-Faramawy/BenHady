@@ -17,21 +17,21 @@
 <link href="{{url('Admin')}}/assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
 
 <!-- STYLE CSS -->
-<link href="{{url('Admin')}}/assets/css-rtl/style.css" rel="stylesheet"/>
-<link href="{{url('Admin')}}/assets/css-rtl/skin-modes.css" rel="stylesheet"/>
-<link href="{{url('Admin')}}/assets/css-rtl/dark-style.css" rel="stylesheet"/>
+<link href="{{url('Admin')}}/assets/css-rtl/style.css" rel="stylesheet" />
+<link href="{{url('Admin')}}/assets/css-rtl/skin-modes.css" rel="stylesheet" />
+<link href="{{url('Admin')}}/assets/css-rtl/dark-style.css" rel="stylesheet" />
 
 <!-- SIDE-MENU CSS -->
 <link href="{{url('Admin')}}/assets/css-rtl/sidemenu.css" rel="stylesheet">
 
 <!--PERFECT SCROLL CSS-->
-<link href="{{url('Admin')}}/assets/plugins/p-scroll/perfect-scrollbar.css" rel="stylesheet"/>
+<link href="{{url('Admin')}}/assets/plugins/p-scroll/perfect-scrollbar.css" rel="stylesheet" />
 
 <!-- CUSTOM SCROLL BAR CSS-->
-<link href="{{url('Admin')}}/assets/plugins/scroll-bar/jquery.mCustomScrollbar.css" rel="stylesheet"/>
+<link href="{{url('Admin')}}/assets/plugins/scroll-bar/jquery.mCustomScrollbar.css" rel="stylesheet" />
 
 <!--- FONT-ICONS CSS -->
-<link href="{{url('Admin')}}/assets/css/icons.css" rel="stylesheet"/>
+<link href="{{url('Admin')}}/assets/css/icons.css" rel="stylesheet" />
 
 <!-- SIDEBAR CSS -->
 <link href="{{url('Admin')}}/assets/plugins/sidebar/sidebar.css" rel="stylesheet">
@@ -54,10 +54,11 @@
 {{--Fonts--}}
 <link href="https://fonts.googleapis.com/css?family=Cairo&display=swap" rel="stylesheet">
 <style>
-    *{
+    * {
         font-family: 'Cairo', sans-serif;
         /*font-size: 16px;*/
     }
+
     /*.form-control{*/
     /*    font-family: 'Cairo',sans-serif !Important;*/
     /*}*/
@@ -80,51 +81,66 @@
         cursor: pointer;
         text-decoration: none;
         z-index: 1;
+        margin: 0 !important;
+        padding: 0 !important;
+        line-height: 0;
         transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
+
     .table-img-link:hover {
-        transform: scale(2.8);
+        transform: scale(2);
         z-index: 99999 !important;
     }
-    .table-img-link:hover .table-icon-box,
+
     .table-img-link:hover img,
     .table-img-link:hover .table-img {
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35) !important;
         background-color: #ffffff !important;
         border-radius: 8px !important;
     }
-    .table-icon-box {
-        border-radius: 8px !important;
-    }
+
     table.dataTable tbody td {
         overflow: visible !important;
         vertical-align: middle !important;
     }
-    table td img:not(.table-icon-img) {
+
+    table td img,
+    .table-img {
         transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s ease;
         cursor: pointer;
         border-radius: 8px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block;
     }
-    table td img:not(.table-icon-img):hover {
-        transform: scale(2.8);
+
+    table td img:hover,
+    .table-img:hover {
+        transform: scale(2);
         z-index: 99999 !important;
         position: relative;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35) !important;
         background-color: #ffffff !important;
     }
-    .img:hover{
-        transform: scale(2.8);
+
+    .img:hover {
+        transform: scale(2);
     }
-    .img{
-        width: 60px!important;
-        height: 44px!important;
-        border-radius: 8px!important;
-        object-fit: cover!important;
+
+    .img {
+        width: 60px !important;
+        height: 44px !important;
+        border-radius: 8px !important;
+        object-fit: cover !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
+
     div#exportexample_filter {
         display: inline-block;
         float: left;
     }
+
     /*button.btn.btn-light.buttons-collection.dropdown-toggle.buttons-colvis {*/
     /*    width: 220px;*/
     /*}*/
@@ -132,16 +148,17 @@
         padding-right: 38px;
     }
 
-    #widgetChart1{
+    #widgetChart1 {
         width: 104% !important;
         border-radius: 20%;
     }
+
     .side-menu .side-menu__icon {
         font-size: 22px;
         font-weight: 500;
     }
+
     div#exportexample_wrapper {
         width: 99%;
     }
 </style>
-
