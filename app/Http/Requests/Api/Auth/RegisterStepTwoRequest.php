@@ -43,8 +43,7 @@ class RegisterStepTwoRequest extends BaseFormRequest
         }
 
         if ($type === UserTypeEnum::VISITOR->value) {
-                  dd(1);
-      $rules['license_number'] = 'required|string';
+            $rules['license_number'] = 'required|string';
             $rules['border_entry_number'] = 'required|string|unique:users,border_entry_number';
         }
 
