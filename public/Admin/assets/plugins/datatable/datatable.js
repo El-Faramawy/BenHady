@@ -4,15 +4,13 @@ $(function(e) {
 	$('#data-table1').DataTable();
 
 	//Data-table2
-	var table = $('#data-table2').DataTable();
-	$('button').click( function() {
-		var data = table.$('input, select').serialize();
-		// alert(
-		// 	"The following data would have been submitted to the server: \n\n"+
-		// 	data.substr( 0, 120 )+'...'
-		// );
-		return false;
-	});
+	if ($('#data-table2').length) {
+		var table = $('#data-table2').DataTable();
+		$('#data-table2 button').click( function() {
+			var data = table.$('input, select').serialize();
+			return false;
+		});
+	}
 
 	//Data-table3
 	$('#data-table3').DataTable( {

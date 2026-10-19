@@ -8,6 +8,7 @@ use App\Models\Branch;
 use App\Models\BranchWorkingHour;
 use App\Models\Car;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
 class BranchRepository
 {
@@ -62,6 +63,47 @@ class BranchRepository
             ->where('branch_id', $branchId)
             ->where('day_of_week', $dayOfWeek)
             ->first();
+    }
+
+    /**
+     * @return Collection<int, BranchWorkingHour>
+     */
+    public function getWorkingHours(Branch $branch): Collection
+    {
+        return $this->workingHourModel
+            ->where('branch_id', $branch->id)
+            ->get();
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $workingHours
+     */
+    public function syncWorkingHours(Branch $branch, array $workingHours): void
+    {
+        foreach ($workingHours as $data) {
+            $dayOfWeek = $data['day_of_week'] ?? null;
+            if (!$dayOfWeek) {
+                continue;
+            }
+
+            $isOpen = (bool) ($data['is_open'] ?? false);
+            $is24 = (bool) ($data['is_24_hours'] ?? false);
+
+            $this->workingHourModel->updateOrCreate(
+                [
+                    'branch_id' => $branch->id,
+                    'day_of_week' => $dayOfWeek,
+                ],
+                [
+                    'is_open' => $isOpen,
+                    'is_24_hours' => $is24,
+                    'open_at' => $is24 ? '00:00:00' : ($data['open_at'] ?? null),
+                    'close_at' => $is24 ? '23:59:59' : ($data['close_at'] ?? null),
+                    'reservation_start_at' => $is24 ? '00:00:00' : ($data['reservation_start_at'] ?? $data['open_at'] ?? null),
+                    'reservation_close_at' => $is24 ? '23:59:59' : ($data['reservation_close_at'] ?? $data['close_at'] ?? null),
+                ]
+            );
+        }
     }
 
     public function isCarAvailableAtBranch(int $carId, int $branchId): bool

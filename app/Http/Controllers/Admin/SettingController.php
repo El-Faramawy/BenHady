@@ -5,36 +5,35 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\Setting\UpdateSettingRequest;
 use App\Models\Setting;
-use App\Traits\UploadTrait;
+use App\Services\Setting\SettingService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class SettingController extends Controller
 {
-    use UploadTrait;
+    public function __construct(protected SettingService $settingService)
+    {
+    }
 
     public function index(): View
     {
-        $setting = Setting::first();
+        $setting = $this->settingService->getSettings();
 
         return view('Admin.Setting.index', compact('setting'));
     }
 
-    public function update(Request $request, Setting $setting): JsonResponse
+    public function update(UpdateSettingRequest $request): JsonResponse
     {
-        $data = $request->except(['logo', 'fav_icon']);
+        $setting = $this->settingService->getSettings();
 
-        if ($request->hasFile('logo')) {
-            $data['logo'] = $this->uploadImage($request->file('logo'), 'uploads/setting', $setting->logo);
-        }
-
-        if ($request->hasFile('fav_icon')) {
-            $data['fav_icon'] = $this->uploadImage($request->file('fav_icon'), 'uploads/setting', $setting->fav_icon);
-        }
-
-        $setting->update($data);
+        $this->settingService->update(
+            $setting,
+            $request->safe()->except(['logo', 'fav_icon']),
+            $request->file('logo'),
+            $request->file('fav_icon')
+        );
 
         return response()->json(['message' => __('messages.general.updated_success')]);
     }

@@ -28,11 +28,17 @@ Route::prefix('admin')->middleware('web')->namespace('App\Http\Controllers\Admin
         Route::resource('categories', 'CategoryController');
         Route::post('multi_delete_categories', 'CategoryController@multiDelete')->name('categories.multiDelete');
 
+        ################################### Brands ##########################################
+        Route::resource('brands', 'BrandController');
+        Route::post('multi_delete_brands', 'BrandController@multiDelete')->name('brands.multiDelete');
+
         ################################### Cities ##########################################
         Route::resource('cities', 'CityController');
         Route::post('multi_delete_cities', 'CityController@multiDelete')->name('cities.multiDelete');
 
         ################################### Branches ##########################################
+        Route::get('branches/{branch}/working-hours', 'BranchWorkingHourController@edit')->name('branches.working_hours.edit');
+        Route::put('branches/{branch}/working-hours', 'BranchWorkingHourController@update')->name('branches.working_hours.update');
         Route::resource('branches', 'BranchController');
         Route::post('multi_delete_branches', 'BranchController@multiDelete')->name('branches.multiDelete');
 
@@ -56,8 +62,27 @@ Route::prefix('admin')->middleware('web')->namespace('App\Http\Controllers\Admin
         Route::resource('faqs', 'FaqController');
         Route::post('multi_delete_faqs', 'FaqController@multiDelete')->name('faqs.multiDelete');
 
+        ################################### Users ##########################################
+        Route::resource('users', 'UserController');
+        Route::post('multi_delete_users', 'UserController@multiDelete')->name('users.multiDelete');
+
+        ################################### Cars ##########################################
+        Route::get('cars/catalog', 'CarController@detailsCatalog')->name('cars.details_catalog');
+        Route::post('cars/{car}/delete-image/{imageId}', 'CarController@deleteImage')->name('cars.delete_image');
+        Route::post('cars/{car}/set-primary-image/{imageId}', 'CarController@setPrimaryImage')->name('cars.set_primary_image');
+        Route::resource('cars', 'CarController');
+        Route::post('multi_delete_cars', 'CarController@multiDelete')->name('cars.multiDelete');
+
+        ################################### Bookings ##########################################
+        Route::get('bookings/invoice/{id}', 'BookingController@invoice')->name('bookings.invoice');
+        Route::resource('bookings', 'BookingController');
+        Route::post('multi_delete_bookings', 'BookingController@multiDelete')->name('bookings.multiDelete');
+
+        ################################### Rental Policies ##########################################
+        Route::resource('rental_policies', 'RentalPolicyController')->only(['index', 'update']);
+
         ################################### Settings ##########################################
-        Route::resource('settings', 'SettingController');
+        Route::resource('settings', 'SettingController')->only(['index', 'update']);
     });
 
 

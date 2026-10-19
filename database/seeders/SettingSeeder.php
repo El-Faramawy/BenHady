@@ -14,6 +14,7 @@ class SettingSeeder extends Seeder
         Setting::firstOrCreate(
             ['id' => 1],
             [
+                'name' => 'بن هادي لتأجير السيارات',
                 'logo' => 'images/logo.png',
                 'fav_icon' => 'images/favicon.ico',
                 'about_us_ar' => 'بن هادي لتأجير السيارات، وجهتك الأولى لتجربة قيادة مريحة وآمنة بأحدث موديلات السيارات في المملكة.',

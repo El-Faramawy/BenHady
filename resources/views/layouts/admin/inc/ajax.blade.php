@@ -72,66 +72,78 @@
         }
         if (data.status === 422) {
             var res = data.responseJSON || (data.responseText ? $.parseJSON(data.responseText) : {});
-            if (res.message) {
-                my_toaster(res.message, 'error');
-            }
+            var hasErrors = false;
             if (res.errors) {
                 if (Array.isArray(res.errors)) {
-                    $.each(res.errors, function(k, v) { my_toaster(v, 'error'); });
+                    $.each(res.errors, function(k, v) { my_toaster(v, 'error'); hasErrors = true; });
                 } else if ($.isPlainObject(res.errors)) {
                     $.each(res.errors, function(key, val) {
                         if (Array.isArray(val)) {
-                            $.each(val, function(i, msg) { my_toaster(msg, 'error'); });
+                            $.each(val, function(i, msg) { my_toaster(msg, 'error'); hasErrors = true; });
                         } else if (typeof val === 'string') {
                             my_toaster(val, 'error');
+                            hasErrors = true;
                         }
                     });
                 }
             }
+            if (!hasErrors && res.message) {
+                my_toaster(res.message, 'error');
+            }
         }
     }
 
-    $(document).on('click', '#addBtn', function () {
-        $('#form-load').html(loader)
-        $('#Modal').modal('show')
+    $(document).off('click', '#addBtn').on('click', '#addBtn', function () {
+        $('#form-load').html(loader);
+        $('#Modal').modal('show');
 
         setTimeout(function (){
-            $('#form-load').load("{{route("$url.create")}}")
-        },100)
+            $('#form-load').load("{{route("$url.create")}}");
+        }, 100);
     });
 
-    $(document).on('submit',"form#form",function (e) {
+    $(document).off('submit', 'form#form').on('submit', 'form#form', function (e) {
         e.preventDefault();
-        var formData = new FormData(this);
+        var $form = $(this);
 
-        var url = $(this).attr('action');
-        // alert(url)
+        if ($form.data('is_submitting')) {
+            return false;
+        }
+        $form.data('is_submitting', true);
+
+        var $btn = $('#submit');
+        var formData = new FormData(this);
+        var url = $form.attr('action');
+
         $.ajax({
             url: url,
             type: 'POST',
             data: formData,
             beforeSend: function () {
-                $('#global-loader').show()
+                $('#global-loader').show();
+                $btn.prop('disabled', true);
             },
             complete: function () {
             },
             success: function (data) {
                 window.setTimeout(function () {
-                    $('#global-loader').hide()
-                    $('#submit').attr('disabled', false);
-                    $('#Modal').modal('hide')
-                    my_toaster(data.message)
+                    $('#global-loader').hide();
+                    $btn.prop('disabled', false);
+                    $form.data('is_submitting', false);
+                    $('#Modal').modal('hide');
+                    my_toaster(data.message);
                     $('#exportexample').DataTable().ajax.reload(null, false);
                 }, 100);
             },
             error: function (data) {
-                $('#global-loader').hide()
-                $('#form-load > .linear-background').hide(loader)
-                $('#submit').html('حفظ').attr('disabled', false);
-                $('#form').show()
+                $('#global-loader').hide();
+                $btn.prop('disabled', false);
+                $form.data('is_submitting', false);
+                $('#form-load > .linear-background').hide(loader);
+                $btn.html('حفظ');
+                $('#form').show();
                 handleAjaxError(data);
-            },//end error method
-
+            },
             cache: false,
             contentType: false,
             processData: false
@@ -231,19 +243,17 @@
 
     });
 
-    $(document).on('click', '#editBtn', function () {
-        var  id = $(this).data('id');
-        $('#form-load').html(loader)
-        $('#Modal').modal('show')
+    $(document).off('click', '#editBtn').on('click', '#editBtn', function () {
+        var id = $(this).data('id');
+        $('#form-load').html(loader);
+        $('#Modal').modal('show');
 
         var url = "{{route("$url.edit",':id')}}";
-        url = url.replace(':id',id)
+        url = url.replace(':id', id);
 
         setTimeout(function (){
-            $('#form-load').load(url)
-        },100)
-
-
+            $('#form-load').load(url);
+        }, 100);
     });
 
     $(document).on('change', 'input[type="file"]', function () {

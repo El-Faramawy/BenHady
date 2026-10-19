@@ -7,7 +7,6 @@
         <x-list.card-header name="سنوات الصنع" :add_button="true" :delete_button="true"></x-list.card-header>
         <x-list.card-body :responsive="true">
             <th class="text-white"><input type="checkbox" id="master"></th>
-            <th class="text-white">#</th>
             <th class="text-white">السنة</th>
             <th class="text-white">الحالة</th>
             <th class="text-white">تحكم</th>
@@ -20,7 +19,6 @@
     <script>
         var columns = [
             {data: 'checkbox', name: 'checkbox', orderable: false, searchable: false},
-            {data: 'id', name: 'id'},
             {data: 'year', name: 'year'},
             {data: 'status', name: 'status'},
             {data: 'action', name: 'action', orderable: false, searchable: false},

@@ -1,6 +1,6 @@
 <?php $setting = App\Models\Setting::first(); ?>
 
-    <!--APP-SIDEBAR-->
+<!--APP-SIDEBAR-->
 <div class="app-sidebar__overlay" data-toggle="sidebar"></div>
 <aside class="app-sidebar">
     <div class="side-header">
@@ -20,6 +20,31 @@
         <x-sidebar-link href="{{ route('admins.index') }}">
             <i class="fe fe-user-check side-menu__icon"></i>
             <span class="side-menu__label">المشرفين</span>
+        </x-sidebar-link>
+
+        <x-sidebar-link href="{{ route('users.index') }}">
+            <i class="fe fe-users side-menu__icon"></i>
+            <span class="side-menu__label">المستخدمين</span>
+        </x-sidebar-link>
+
+        <x-sidebar-link href="{{ route('cars.index') }}">
+            <i class="fa fa-car side-menu__icon"></i>
+            <span class="side-menu__label">السيارات</span>
+        </x-sidebar-link>
+
+        <x-sidebar-link href="{{ route('cars.details_catalog') }}">
+            <i class="fe fe-layers side-menu__icon"></i>
+            <span class="side-menu__label">كتالوج وتفاصيل السيارات</span>
+        </x-sidebar-link>
+
+        <x-sidebar-link href="{{ route('brands.index') }}">
+            <i class="fe fe-tag side-menu__icon"></i>
+            <span class="side-menu__label">الماركات</span>
+        </x-sidebar-link>
+
+        <x-sidebar-link href="{{ route('bookings.index') }}">
+            <i class="fe fe-clipboard side-menu__icon"></i>
+            <span class="side-menu__label">الحجوزات</span>
         </x-sidebar-link>
 
         <x-sidebar-link href="{{ route('categories.index') }}">
@@ -60,6 +85,11 @@
         <x-sidebar-link href="{{ route('faqs.index') }}">
             <i class="fe fe-help-circle side-menu__icon"></i>
             <span class="side-menu__label">الأسئلة الشائعة</span>
+        </x-sidebar-link>
+
+        <x-sidebar-link href="{{ route('rental_policies.index') }}">
+            <i class="fe fe-shield side-menu__icon"></i>
+            <span class="side-menu__label">سياسات التأجير والإلغاء</span>
         </x-sidebar-link>
 
         <x-sidebar-link href="{{ route('settings.index') }}">

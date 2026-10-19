@@ -17,6 +17,7 @@ class Setting extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'name',
         'logo',
         'fav_icon',
         'about_us_ar',

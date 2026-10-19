@@ -254,4 +254,176 @@ class CarRepository
             default => $query->orderBy('cars.id', 'desc'),
         };
     }
+
+    /**
+     * Get DataTable query builder for Admin car listing.
+     */
+    public function getDataTableQuery(): Builder
+    {
+        return $this->model->newQuery()
+            ->with([
+                'brand:id,name_ar,name_en,logo_url',
+                'category:id,name_ar,name_en',
+                'branch:id,name_ar,name_en',
+                'modelYear:id,year',
+                'transmission:id,name_ar,name_en',
+                'fuelType:id,name_ar,name_en',
+                'primaryImage:id,car_id,image_path',
+            ])
+            ->orderBy('id', 'desc');
+    }
+
+    /**
+     * Create a new car.
+     *
+     * @param array<string, mixed> $data
+     */
+    public function create(array $data): Car
+    {
+        return $this->model->create($data);
+    }
+
+    /**
+     * Update car attributes.
+     *
+     * @param array<string, mixed> $data
+     */
+    public function update(Car $car, array $data): bool
+    {
+        return $car->update($data);
+    }
+
+    /**
+     * Delete a car.
+     */
+    public function delete(Car $car): bool
+    {
+        return (bool) $car->delete();
+    }
+
+    /**
+     * Delete multiple cars by IDs.
+     *
+     * @param array<int> $ids
+     */
+    public function deleteMultiple(array $ids): int
+    {
+        return $this->model->whereIn('id', $ids)->delete();
+    }
+
+    /**
+     * Sync car features.
+     *
+     * @param array<int> $featureIds
+     */
+    public function syncFeatures(Car $car, array $featureIds): void
+    {
+        $car->features()->sync($featureIds);
+    }
+
+    /**
+     * Sync available pickup branches for car.
+     *
+     * @param array<int> $branchIds
+     */
+    public function syncBranches(Car $car, array $branchIds): void
+    {
+        $car->branches()->sync($branchIds);
+    }
+
+    /**
+     * Add an image record to the car.
+     */
+    public function addImage(Car $car, string $imagePath, bool $isPrimary = false, int $sortOrder = 0): \App\Models\CarImage
+    {
+        if ($isPrimary) {
+            $car->images()->update(['is_primary' => false]);
+        }
+
+        return $car->images()->create([
+            'image_path' => $imagePath,
+            'is_primary' => $isPrimary,
+            'sort_order' => $sortOrder,
+        ]);
+    }
+
+    /**
+     * Delete a car image.
+     */
+    public function deleteImage(Car $car, int $imageId): bool
+    {
+        $image = $car->images()->where('id', $imageId)->first();
+        if (!$image) {
+            return false;
+        }
+
+        $wasPrimary = $image->is_primary;
+        $deleted = (bool) $image->delete();
+
+        // If the primary image was deleted, make the first remaining image primary
+        if ($deleted && $wasPrimary) {
+            $firstRemaining = $car->images()->first();
+            if ($firstRemaining) {
+                $firstRemaining->update(['is_primary' => true]);
+            }
+        }
+
+        return $deleted;
+    }
+
+    /**
+     * Set a car image as primary.
+     */
+    public function setPrimaryImage(Car $car, int $imageId): bool
+    {
+        $target = $car->images()->where('id', $imageId)->first();
+        if (!$target) {
+            return false;
+        }
+
+        $car->images()->update(['is_primary' => false]);
+        return (bool) $target->update(['is_primary' => true]);
+    }
+
+    /**
+     * Load car with all relations for comprehensive Car Details view.
+     */
+    public function getCarWithFullDetails(Car $car): Car
+    {
+        return $car->load([
+            'brand',
+            'category',
+            'branch.city',
+            'branches.city',
+            'modelYear',
+            'transmission',
+            'fuelType',
+            'images',
+            'features',
+            'bookings' => fn ($q) => $q->with(['user', 'pickupBranch', 'returnBranch'])->orderBy('id', 'desc')->take(20),
+        ]);
+    }
+
+    /**
+     * Get all active cars with relations for visual catalog overview.
+     *
+     * @return Collection<int, Car>
+     */
+    public function getAllCarsForCatalog(): Collection
+    {
+        return $this->model
+            ->with([
+                'brand',
+                'category',
+                'branch.city',
+                'modelYear',
+                'transmission',
+                'fuelType',
+                'primaryImage',
+                'images',
+                'features',
+            ])
+            ->orderBy('id', 'desc')
+            ->get();
+    }
 }

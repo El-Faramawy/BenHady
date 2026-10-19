@@ -26,8 +26,10 @@ if (!function_exists('user_api')) {
 if (!function_exists('get_file')) {
     function get_file($file)
     {
+        $defaultImg = asset('Admin/imgs/default.jpg');
+
         if (empty($file)) {
-            return asset('Admin/imgs/default.jpg');
+            return $defaultImg;
         }
 
         if (filter_var($file, FILTER_VALIDATE_URL)) {
@@ -35,16 +37,31 @@ if (!function_exists('get_file')) {
         }
 
         if (str_starts_with($file, 'storage/')) {
-            return asset($file);
+            $relativePath = substr($file, 8);
+            if (file_exists(public_path($file)) && !is_dir(public_path($file))) {
+                return asset($file);
+            }
+            if (file_exists(storage_path('app/public/' . $relativePath)) && !is_dir(storage_path('app/public/' . $relativePath))) {
+                return asset($file);
+            }
+            return $defaultImg;
         }
 
-        // If file exists in public/
+        // If file exists directly in public/
         if (file_exists(public_path($file)) && !is_dir(public_path($file))) {
             return asset($file);
         }
 
-        // Default to storage disk URL
-        return asset('storage/' . $file);
+        // If file exists in public/storage/ or storage/app/public/
+        if (file_exists(public_path('storage/' . $file)) && !is_dir(public_path('storage/' . $file))) {
+            return asset('storage/' . $file);
+        }
+
+        if (file_exists(storage_path('app/public/' . $file)) && !is_dir(storage_path('app/public/' . $file))) {
+            return asset('storage/' . $file);
+        }
+
+        return $defaultImg;
     }
 }
 
@@ -68,7 +85,7 @@ if (!function_exists('tableAction')) {
     {
         $action = '';
         if ($edit) {
-            $action .= '<button  id="editBtn" class="btn btn-default btn-primary btn-sm mb-2  mb-xl-0 " data-toggle="tooltip" title="تعديل"
+            $action .= '<button  id="editBtn" class="btn btn-default btn-primary btn-sm mb-2 mb-xl-0 " data-toggle="tooltip" title="تعديل"
                                 data-id="' . $id . '" ><i class="fa fa-edit text-white"></i>
                             </button>';
         }
@@ -79,7 +96,7 @@ if (!function_exists('tableAction')) {
 
         }
         if ($view) {
-            $action .= '<button class="btn btn-default btn-success btn-sm mb-2 mb-xl-0 view" data-toggle="tooltip" title="عرض"
+            $action .= '<button class="btn btn-default btn-action-view btn-sm mb-2 mb-xl-0 view" data-toggle="tooltip" title="عرض"
                                 data-id="' . $id . '" ><i class="fa fa-eye text-white"></i>
                             </button>';
 
@@ -139,3 +156,26 @@ if (!function_exists('tableIcon')) {
     }
 }
 
+if (!function_exists('featureIcon')) {
+    function featureIcon(?string $icon, string $fallbackIcon = 'fa fa-check-square', int $size = 32): string
+    {
+        if (empty($icon)) {
+            return '<div class="d-inline-flex align-items-center justify-content-center" style="width: ' . $size . 'px; height: ' . $size . 'px; border-radius: 6px; background: #eef2ff; color: #4f46e5; border: 1px solid #e0e7ff; flex-shrink: 0;"><i class="' . $fallbackIcon . '" style="font-size: 14px;"></i></div>';
+        }
+
+        if (str_starts_with($icon, 'fa ') || str_starts_with($icon, 'fe ') || str_starts_with($icon, 'bi ') || str_starts_with($icon, 'mdi ')) {
+            return '<div class="d-inline-flex align-items-center justify-content-center" style="width: ' . $size . 'px; height: ' . $size . 'px; border-radius: 6px; background: #eef2ff; color: #4f46e5; border: 1px solid #e0e7ff; flex-shrink: 0;"><i class="' . htmlspecialchars($icon, ENT_QUOTES, 'UTF-8') . '" style="font-size: 14px;"></i></div>';
+        }
+
+        if (str_starts_with(trim($icon), '<svg')) {
+            return '<div class="d-inline-flex align-items-center justify-content-center" style="width: ' . $size . 'px; height: ' . $size . 'px; border-radius: 6px; background: #ffffff; border: 1px solid #e2e8f0; flex-shrink: 0; padding: 2px;">' . $icon . '</div>';
+        }
+
+        $url = get_file($icon);
+        $defaultUrl = asset('Admin/imgs/default.jpg');
+        $isSvg = str_ends_with(strtolower((string) parse_url((string)$icon, PHP_URL_PATH)), '.svg');
+        $fit = $isSvg ? 'contain' : 'cover';
+
+        return '<img src="' . htmlspecialchars((string) $url, ENT_QUOTES, 'UTF-8') . '" class="feature-img-static" style="width: ' . $size . 'px; height: ' . $size . 'px; object-fit: ' . $fit . '; border-radius: 6px; border: 1px solid #e2e8f0; background: #ffffff; padding: 2px; display: inline-block; flex-shrink: 0; pointer-events: none; transition: none !important; transform: none !important;" onerror="this.onerror=null;this.src=\'' . $defaultUrl . '\';" alt="feature icon">';
+    }
+}

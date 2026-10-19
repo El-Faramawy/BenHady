@@ -65,4 +65,30 @@ class UserRepository
     {
         return (bool) $user->delete();
     }
+
+    /**
+     * Delete multiple users by their IDs.
+     *
+     * @param array<int> $ids
+     */
+    public function deleteMultiple(array $ids): int
+    {
+        return $this->model->whereIn('id', $ids)->delete();
+    }
+
+    /**
+     * Get DataTable query builder for admin management.
+     */
+    public function getDataTableQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return $this->model->newQuery()->orderBy('id', 'desc');
+    }
+
+    /**
+     * Get user with their bookings and coupons loaded.
+     */
+    public function getUserWithBookings(User $user): User
+    {
+        return $user->load(['bookings.car.brand', 'bookings.pickupBranch', 'bookings.returnBranch', 'coupons']);
+    }
 }

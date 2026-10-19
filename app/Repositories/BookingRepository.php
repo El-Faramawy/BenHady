@@ -7,6 +7,7 @@ namespace App\Repositories;
 use App\Enums\Booking\BookingStatusEnum;
 use App\Exceptions\Booking\BookingNotFoundException;
 use App\Models\Booking;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
 class BookingRepository
@@ -172,5 +173,84 @@ class BookingRepository
         }
 
         return $booking;
+    }
+
+    /**
+     * Get DataTable query for Admin bookings list with optional status filtering.
+     */
+    public function getDataTableQuery(?string $statusFilter = null): Builder
+    {
+        $query = $this->model->newQuery()
+            ->with([
+                'user:id,name,phone,email',
+                'car' => function ($q) {
+                    $q->select(['id', 'brand_id', 'name_ar', 'name_en', 'daily_price'])
+                        ->with([
+                            'brand:id,name_ar,name_en',
+                            'primaryImage:id,car_id,image_path',
+                        ]);
+                },
+                'pickupBranch:id,name_ar,name_en',
+                'returnBranch:id,name_ar,name_en',
+            ]);
+
+        if ($statusFilter === 'active') {
+            $query->active();
+        } elseif ($statusFilter === 'closed') {
+            $query->closed();
+        } elseif (!empty($statusFilter) && $statusFilter !== 'all') {
+            $query->where('status', $statusFilter);
+        }
+
+        return $query->orderByDesc('id');
+    }
+
+    /**
+     * Find booking by ID with full details for showcase and invoice.
+     */
+    public function findWithFullDetails(int $id): Booking
+    {
+        return $this->model->newQuery()
+            ->with([
+                'user',
+                'car.brand',
+                'car.category',
+                'car.primaryImage',
+                'car.modelYear',
+                'car.transmission',
+                'car.fuelType',
+                'pickupBranch.city',
+                'returnBranch.city',
+                'coupon',
+            ])
+            ->findOrFail($id);
+    }
+
+    /**
+     * Update booking.
+     *
+     * @param array<string, mixed> $data
+     */
+    public function update(Booking $booking, array $data): bool
+    {
+        return $booking->update($data);
+    }
+
+    /**
+     * Delete booking.
+     */
+    public function delete(Booking $booking): bool
+    {
+        return (bool) $booking->delete();
+    }
+
+    /**
+     * Batch delete bookings.
+     *
+     * @param array<int> $ids
+     */
+    public function deleteMultiple(array $ids): int
+    {
+        return $this->model->newQuery()->whereIn('id', $ids)->delete();
     }
 }

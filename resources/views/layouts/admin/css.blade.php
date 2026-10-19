@@ -53,6 +53,7 @@
 
 {{--Fonts--}}
 <link href="https://fonts.googleapis.com/css?family=Cairo&display=swap" rel="stylesheet">
+@stack('admin_css')
 <style>
     * {
         font-family: 'Cairo', sans-serif;
@@ -136,6 +137,23 @@
         padding: 0 !important;
     }
 
+    /* Prevent hover zoom and click issues on feature icons */
+    .feature-img-static,
+    .feature-img-static:hover,
+    #features-create img,
+    #features-create img:hover,
+    #features-edit img,
+    #features-edit img:hover,
+    .features-card img,
+    .features-card img:hover,
+    .no-zoom,
+    .no-zoom:hover {
+        transform: none !important;
+        transition: none !important;
+        box-shadow: none !important;
+        cursor: default !important;
+    }
+
     div#exportexample_filter {
         display: inline-block;
         float: left;
@@ -160,5 +178,45 @@
 
     div#exportexample_wrapper {
         width: 99%;
+    }
+
+    /* Custom Action Buttons */
+    .btn-action-hours {
+        background-color: #f59e0b !important;
+        border-color: #d97706 !important;
+        color: #ffffff !important;
+        transition: all 0.2s ease-in-out;
+    }
+    .btn-action-hours:hover {
+        background-color: #d97706 !important;
+        border-color: #b45309 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4) !important;
+    }
+
+    .btn-action-details {
+        background-color: #7c3aed !important;
+        border-color: #6d28d9 !important;
+        color: #ffffff !important;
+        transition: all 0.2s ease-in-out;
+    }
+    .btn-action-details:hover {
+        background-color: #6d28d9 !important;
+        border-color: #5b21b6 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 10px rgba(124, 58, 237, 0.4) !important;
+    }
+
+    .btn-action-view {
+        background-color: #0891b2 !important;
+        border-color: #0e7490 !important;
+        color: #ffffff !important;
+        transition: all 0.2s ease-in-out;
+    }
+    .btn-action-view:hover {
+        background-color: #0e7490 !important;
+        border-color: #155e75 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 10px rgba(8, 145, 178, 0.4) !important;
     }
 </style>
