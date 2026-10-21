@@ -15,8 +15,8 @@ class FaqSeeder extends Seeder
             [
                 'question_ar' => 'ما هي متطلبات استئجار سيارة من بن هادي؟',
                 'question_en' => 'What are the requirements to rent a car from BenHady?',
-                'answer_ar' => 'يتطلب استئجار سيارة هوية وطنية أو إقامة سارية المفعول للمواطنين والمقيمين، أو جواز سفر ساري للزوار، ورخصة قيادة سارية المفعول، بالإضافة إلى بطاقة دفع إلكترونية أو رصيد محفظة.',
-                'answer_en' => 'Renting a car requires a valid National ID or Iqama for citizens and residents, or a valid passport for visitors, a valid driving license, and an electronic payment card or wallet balance.',
+                'answer_ar' => 'يتطلب استئجار سيارة هوية وطنية أو إقامة سارية المفعول للمواطنين والمقيمين، أو رقم حدود ساري للزوار، ورخصة قيادة سارية المفعول، بالإضافة إلى بطاقة دفع إلكترونية أو رصيد محفظة.',
+                'answer_en' => 'Renting a car requires a valid National ID or Iqama for citizens and residents, or a valid border entry number for visitors, a valid driving license, and an electronic payment card or wallet balance.',
                 'sort_order' => 1,
             ],
             [

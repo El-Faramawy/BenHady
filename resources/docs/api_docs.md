@@ -19,9 +19,11 @@ Welcome to the **BenHady Car Rental API** documentation. This document provides 
   - [1.4 Register Step 2 (Complete)](#14-register-step-2-complete)
   - [1.5 Login](#15-login)
   - [1.6 Logout](#16-logout)
+  - [1.7 Reset Password](#17-reset-password)
 - [2. User Profile](#2-user-profile)
   - [2.1 Get Current User (Me)](#21-get-current-user-me)
   - [2.2 Update Profile](#22-update-profile)
+  - [2.3 Delete Account](#23-delete-account)
 - [3. Home Screen](#3-home-screen)
   - [3.1 Home Aggregation](#31-home-aggregation)
 - [4. Cars Catalog](#4-cars-catalog)
@@ -47,11 +49,13 @@ Welcome to the **BenHady Car Rental API** documentation. This document provides 
   - [9.3 Delete All Notifications](#93-delete-all-notifications)
   - [9.4 Save FCM Phone Token](#94-save-fcm-phone-token)
   - [9.5 Delete FCM Phone Token](#95-delete-fcm-phone-token)
-- [10. Car Bookings](#10-car-bookings)
+- [10. Bookings](#10-bookings)
   - [10.1 Create Booking](#101-create-booking)
-  - [10.2 Get Active Bookings](#102-get-active-bookings)
-  - [10.3 Get Closed Bookings](#103-get-closed-bookings)
-  - [10.4 Get Booking Details](#104-get-booking-details)
+  - [10.2 Active Bookings](#102-active-bookings)
+  - [10.3 Closed Bookings (History)](#103-closed-bookings-history)
+  - [10.4 Booking Details](#104-booking-details)
+- [11. Coupons & Discounts](#11-coupons--discounts)
+  - [11.1 Apply Discount Coupon](#111-apply-discount-coupon)
 
 ---
 
@@ -179,7 +183,20 @@ Verifies the SMS OTP code and sets `phone_verified = true`.
 ```json
 {
   "code": 200,
-  "data": null,
+  "data": {
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "token_type": "bearer",
+    "expires_in": 3600,
+    "user": {
+      "id": 1,
+      "name": "أحمد محمد السديري",
+      "email": "ahmed.samir@example.com",
+      "phone": "966500000000",
+      "date_of_birth": "1992-05-15",
+      "type": "national_id",
+      "status": "active"
+    }
+  },
   "messages": [
     "تم التحقق من رقم الهاتف بنجاح"
   ],
@@ -241,7 +258,7 @@ Resends a new verification OTP code with cooldown protection (default 60s).
 ---
 
 ### 1.4 Register Step 2 (Complete)
-Completes the registration process. Requires `phone_verified == true`. Sets the password, identity documents, and returns the JWT Bearer token.
+Completes the registration process. Requires `phone_verified == true`. Sets the password and identity documents according to user type (`national_id`, `resident_id`, or `visitor`), and returns the JWT Bearer token.
 
 - **Method**: `POST`
 - **URL**: `auth/register-step-two`
@@ -251,18 +268,19 @@ Completes the registration process. Requires `phone_verified == true`. Sets the 
 #### Request Body
 | Parameter | Type | Required | Description / Rules | Example |
 |---|---|---|---|---|
-| `phone` | String | Yes | Must be verified in step 1 | `966500000000` |
-| `password` | String | Yes | Min 8 chars, must match confirmation | `Secret@123` |
+| `phone` | String | Yes | Must be verified in step 1 (`exists:users,phone`) | `966500000000` |
+| `type` | Enum | Yes | User type: `national_id`, `resident_id`, or `visitor` | `national_id` |
+| `password` | String | Yes | Min 8 chars, must match confirmation (`confirmed`) | `Secret@123` |
 | `password_confirmation` | String | Yes | Password confirmation | `Secret@123` |
 | `driving_license_number` | String | Yes | Driving license number | `DL-987654321` |
 | `license_expiry_date` | Date | Yes | Format `Y-m-d` (must be `after:today`) | `2032-12-31` |
-| `type` | Enum | Yes | `national_id`, `resident_id`, or `passport` | `national_id` |
-| `id_number` | String | Conditional | Required if type is `national_id` or `resident_id` | `1020304050` |
-| `id_number_end_date` | Date | Conditional | Required if type is `national_id` or `resident_id` | `2032-12-31` |
+| `id_number` | String | Conditional | Required if type is `national_id` or `resident_id` (`unique:users,id_number`) | `1020304050` |
+| `id_number_end_date` | Date | Conditional | Required if type is `national_id` or `resident_id` (`Y-m-d`) | `2032-12-31` |
 | `version_number` | String | Conditional | Required if type is `national_id` or `resident_id` | `1` |
-| `border_entry_number` | String | Conditional | Required if type is `passport` | `9988776655` |
+| `license_number` | String | Conditional | Required if type is `visitor` (Visitor driving license number) | `VIS-LIC-12345` |
+| `border_entry_number` | String | Conditional | Required if type is `visitor` (`unique:users,border_entry_number`) | `9988776655` |
 
-#### Success Response (`201 Created`)
+#### Success Response (`201 Created` - National ID / Resident)
 ```json
 {
   "code": 201,
@@ -277,6 +295,31 @@ Completes the registration process. Requires `phone_verified == true`. Sets the 
       "phone": "966500000000",
       "date_of_birth": "1992-05-15",
       "type": "national_id",
+      "status": "active"
+    }
+  },
+  "messages": [
+    "تم تسجيل حسابك بنجاح"
+  ],
+  "errors": []
+}
+```
+
+#### Success Response (`201 Created` - Visitor)
+```json
+{
+  "code": 201,
+  "data": {
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "token_type": "bearer",
+    "expires_in": 3600,
+    "user": {
+      "id": 2,
+      "name": "John Doe",
+      "email": "john.doe@example.com",
+      "phone": "966511111111",
+      "date_of_birth": "1990-01-10",
+      "type": "visitor",
       "status": "active"
     }
   },
@@ -302,7 +345,7 @@ Completes the registration process. Requires `phone_verified == true`. Sets the 
 ---
 
 ### 1.5 Login
-Authenticates user using their National ID / Resident ID or Border Entry Number (`identifier`) and password.
+Authenticates user using their National ID / Resident ID (`id_number`) or Visitor Border Entry Number (`border_entry_number`) as `identifier`, along with account password.
 
 - **Method**: `POST`
 - **URL**: `auth/login`
@@ -312,7 +355,7 @@ Authenticates user using their National ID / Resident ID or Border Entry Number 
 #### Request Body
 | Parameter | Type | Required | Description | Example |
 |---|---|---|---|---|
-| `identifier` | String | Yes | National ID, Resident ID, or Border Entry Number | `1020304050` |
+| `identifier` | String | Yes | National ID, Resident ID, or Visitor Border Entry Number (`id_number` or `border_entry_number`) | `1020304050` |
 | `password` | String | Yes | Account password | `Secret@123` |
 
 #### Success Response (`200 OK`)
@@ -363,6 +406,68 @@ Revokes the authenticated user's JWT token.
 
 ---
 
+### 1.7 Reset Password
+Resets the user account password using their registered mobile phone number.
+
+> **Security & OTP Verification Guard:** This endpoint strictly requires the user to have performed a successful phone verification via `POST /auth/verify-phone` within the last **15 minutes**. If the phone has not been verified or the verification window has elapsed, the request is rejected with `400 Bad Request`. Upon a successful password update, the verification status is consumed immediately to prevent replay attacks.
+
+- **Method**: `POST`
+- **URL**: `auth/reset-password`
+- **Auth Required**: No (Public guest endpoint)
+- **Content-Type**: `multipart/form-data`
+
+#### Headers
+| Header | Value | Description |
+|---|---|---|
+| `Accept` | `application/json` | Required |
+| `Accept-Language` | `ar` or `en` | Optional (default: `ar`) |
+
+#### Request Body
+| Parameter | Type | Required | Description / Rules | Example |
+|---|---|---|---|---|
+| `phone` | String | Yes | Registered phone number (`exists:users,phone`) | `966500000000` |
+| `password` | String | Yes | New password (min: 8 characters) | `Secret@1234` |
+| `password_confirmation` | String | Yes | Confirmation matching `password` | `Secret@1234` |
+
+#### Success Response (`200 OK`)
+```json
+{
+  "code": 200,
+  "data": null,
+  "messages": [
+    "تم تغيير كلمة المرور بنجاح"
+  ],
+  "errors": []
+}
+```
+
+#### Error Response (`400 Bad Request` - OTP Not Verified)
+```json
+{
+  "code": 400,
+  "data": null,
+  "messages": [],
+  "errors": [
+    "يجب التحقق من رقم الهاتف عبر رمز التحقق أولاً قبل تغيير كلمة المرور"
+  ]
+}
+```
+
+#### Error Response (`422 Unprocessable Content` - Validation Failure)
+```json
+{
+  "code": 422,
+  "message": "حقل تأكيد كلمة المرور غير متطابق.",
+  "errors": {
+    "password": [
+      "حقل تأكيد كلمة المرور غير متطابق."
+    ]
+  }
+}
+```
+
+---
+
 ## 2. User Profile
 
 ### 2.1 Get Current User (Me)
@@ -399,19 +504,31 @@ Retrieves current profile details of the authenticated user.
 ---
 
 ### 2.2 Update Profile
-Updates user profile fields.
+Updates authenticated user profile fields. Allows updating personal data, identity attributes, password, driving license details, and preferred language.
 
 - **Method**: `PUT`
 - **URL**: `user/profile`
 - **Auth Required**: Yes (`Bearer <token>`)
-- **Content-Type**: `multipart/form-data` or `x-www-form-urlencoded`
+- **Content-Type**: `multipart/form-data`
 
 #### Request Body
-| Parameter | Type | Required | Description |
-|---|---|---|---|
-| `name` | String | No | Updated name |
-| `email` | String | No | Updated email |
-| `date_of_birth` | Date | No | Format `Y-m-d` |
+| Parameter | Type | Required | Description / Rules | Example |
+|---|---|---|---|---|
+| `name` | String | No | Updated display name (max: 255) | `أحمد محمد المحدث` |
+| `email` | String | No | Updated email (unique except current user) | `ahmed.updated@example.com` |
+| `phone` | String | No | Updated phone number (unique except current user) | `966500000001` |
+| `date_of_birth` | Date | No | Format `Y-m-d` | `1992-05-15` |
+| `type` | Enum | No | `national_id`, `resident_id`, or `visitor` | `national_id` |
+| `password` | String | No | New password (min: 8 characters, confirmed) | `NewSecret@123` |
+| `password_confirmation` | String | Conditional | Required if `password` is provided | `NewSecret@123` |
+| `driving_license_number` | String | No | Driving license number | `DL-987654321` |
+| `license_expiry_date` | Date | No | Format `Y-m-d` | `2032-12-31` |
+| `id_number` | String | No | National ID / Resident ID (unique except current user) | `1020304050` |
+| `id_number_end_date` | Date | No | Format `Y-m-d` | `2032-12-31` |
+| `version_number` | String | No | ID version number | `1` |
+| `license_number` | String | No | Visitor driving license number | `VIS-LIC-12345` |
+| `border_entry_number` | String | No | Visitor Border Entry Number (unique except current user) | `9988776655` |
+| `language` | String | No | Preferred locale (`ar` or `en`) | `ar` |
 
 #### Success Response (`200 OK`)
 ```json
@@ -420,12 +537,64 @@ Updates user profile fields.
   "data": {
     "id": 1,
     "name": "أحمد محمد المحدث",
-    "email": "ahmed.updated@example.com"
+    "email": "ahmed.updated@example.com",
+    "phone": "966500000000",
+    "date_of_birth": "1992-05-15",
+    "type": "national_id",
+    "id_number": "1020304050",
+    "id_number_end_date": "2032-12-31",
+    "version_number": "1",
+    "license_number": null,
+    "border_entry_number": null,
+    "driving_license_number": "DL-987654321",
+    "license_expiry_date": "2032-12-31",
+    "language": "ar",
+    "status": "active"
   },
   "messages": [
     "تم تحديث الملف الشخصي بنجاح"
   ],
   "errors": []
+}
+```
+
+---
+
+### 2.3 Delete Account
+Permanently deletes the authenticated user's account, removes all associated device and FCM tokens from the database, and invalidates active JWT session tokens.
+
+- **Method**: `DELETE`
+- **URL**: `auth/account`
+- **Auth Required**: Yes (`Bearer <token>`)
+
+#### Headers
+| Header | Value | Description |
+|---|---|---|
+| `Authorization` | `Bearer <token>` | Required JWT access token |
+| `Accept` | `application/json` | Required |
+| `Accept-Language` | `ar` or `en` | Optional (default: `ar`) |
+
+#### Success Response (`200 OK`)
+```json
+{
+  "code": 200,
+  "data": null,
+  "messages": [
+    "تم حذف الحساب بنجاح"
+  ],
+  "errors": []
+}
+```
+
+#### Error Response (`401 Unauthorized`)
+```json
+{
+  "code": 401,
+  "data": null,
+  "messages": [],
+  "errors": [
+    "غير مصرح"
+  ]
 }
 ```
 
@@ -512,7 +681,7 @@ Retrieves a paginated catalog of cars with multi-criteria filtering and sorting.
 | `max_price` | Numeric | - | Maximum daily rental price |
 | `seats` | Integer | - | Number of passenger seats |
 | `search` | String | - | Text search in car name or description |
-| `sort_by` | String | `created_at` | Sort field: `price`, `model_year`, `created_at` |
+| `sort_by` | String | `created_at` | Sort field: `price`, `year`, `created_at` |
 | `sort_order` | String | `desc` | `asc` or `desc` |
 | `per_page` | Integer | `15` | Results per page |
 | `page` | Integer | `1` | Page number |
@@ -747,7 +916,8 @@ Retrieves paginated notifications for the authenticated user. Automatically mark
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `page` | Integer | `1` | Page number |
-| `per_page` | Integer | `15` | Limit per page |
+| `per_page` | Integer | `15` | Limit per page (1 - 50) |
+| `limit` | Integer | - | Optional maximum items limit (1 - 50) |
 
 #### Success Response (`200 OK`)
 ```json
@@ -879,27 +1049,33 @@ Deletes a specific device token when the user logs out of their device.
 
 ---
 
-## 10. Car Bookings
-
-All booking endpoints require user authentication (`Authorization: Bearer <token>`). Bookings validate branch opening and closing hours against the **Asia/Riyadh (UTC+3)** timezone and verify vehicle availability and overlap prevention.
+## 10. Bookings
 
 ### 10.1 Create Booking
-Creates a new car booking request. Automatically calculates duration in days, snapshots daily rental price, validates branch reservation hours, and generates a formatted booking reference (e.g. `BH-2026-00001`).
+Creates a new car rental reservation for the authenticated user. Automatically validates car availability, branch working hours at pickup/return times, prevents overlapping bookings, and applies coupon discount if provided.
 
 - **Method**: `POST`
 - **URL**: `bookings`
 - **Auth Required**: Yes (`Bearer <token>`)
 - **Content-Type**: `multipart/form-data`
 
+#### Headers
+| Header | Value | Description |
+|---|---|---|
+| `Authorization` | `Bearer <token>` | Required JWT access token |
+| `Accept` | `application/json` | Required |
+| `Accept-Language` | `ar` or `en` | Optional (default: `ar`) |
+
 #### Request Body
-| Parameter | Type | Required | Description | Example |
+| Parameter | Type | Required | Description / Rules | Example |
 |---|---|---|---|---|
-| `car_id` | Integer | Yes | ID of the car to rent | `1` |
-| `pickup_branch_id` | Integer | Yes | ID of pickup branch | `1` |
-| `return_branch_id` | Integer | Yes | ID of return branch | `1` |
-| `pickup_at` | DateTime string | Yes | Pickup date and time (`after:now`) | `2026-09-25 10:00` |
-| `return_at` | DateTime string | Yes | Return date and time (`after:pickup_at`) | `2026-09-28 10:00` |
-| `notes` | String | No | Additional notes or special requests (max: 1000) | `يرجى تجهيز السيارة في الموعد` |
+| `car_id` | Integer | Yes | Car ID (`exists:cars,id`) | `1` |
+| `pickup_branch_id` | Integer | Yes | Pickup branch ID (`exists:branches,id`) | `1` |
+| `return_branch_id` | Integer | Yes | Return branch ID (`exists:branches,id`) | `2` |
+| `pickup_at` | DateTime | Yes | Format `Y-m-d H:i:s` (must be `after:now`) | `2026-10-20 10:00:00` |
+| `return_at` | DateTime | Yes | Format `Y-m-d H:i:s` (must be `after:pickup_at`) | `2026-10-23 10:00:00` |
+| `notes` | String | No | Additional customer notes (max: 1000) | `يرجى تجهيز مقعد أطفال` |
+| `coupon_code` | String | No | Promotional discount coupon code | `SAVE10` |
 
 #### Success Response (`201 Created`)
 ```json
@@ -907,23 +1083,21 @@ Creates a new car booking request. Automatically calculates duration in days, sn
   "code": 201,
   "data": {
     "id": 1,
-    "booking_number": "BH-2026-00001",
+    "booking_number": "BH-20261020-0001",
     "user_id": 1,
     "car_id": 1,
     "pickup_branch_id": 1,
-    "return_branch_id": 1,
-    "pickup_at": "2026-09-25T10:00:00.000000Z",
-    "return_at": "2026-09-28T10:00:00.000000Z",
-    "daily_price": "500.00",
+    "return_branch_id": 2,
+    "pickup_at": "2026-10-20T10:00:00.000000Z",
+    "return_at": "2026-10-23T10:00:00.000000Z",
+    "daily_price": "250.00",
     "total_days": 3,
-    "subtotal": "1500.00",
-    "discount": "0.00",
-    "total": "1500.00",
-    "notes": "يرجى تجهيز السيارة في الموعد",
+    "subtotal": "750.00",
+    "discount": "75.00",
+    "total": "675.00",
+    "notes": "يرجى تجهيز مقعد أطفال",
     "status": "pending",
-    "status_label": "قيد الانتظار",
-    "created_at": "2026-09-19T12:00:00.000000Z",
-    "updated_at": "2026-09-19T12:00:00.000000Z"
+    "status_label": "قيد الانتظار"
   },
   "messages": [
     "تم إنشاء الحجز بنجاح"
@@ -932,10 +1106,34 @@ Creates a new car booking request. Automatically calculates duration in days, sn
 }
 ```
 
+#### Error Response (`400 Bad Request` - Branch Closed)
+```json
+{
+  "code": 400,
+  "data": null,
+  "messages": [],
+  "errors": [
+    "الفرع مغلق في الوقت المطلوب"
+  ]
+}
+```
+
+#### Error Response (`400 Bad Request` - Overlapping Booking)
+```json
+{
+  "code": 400,
+  "data": null,
+  "messages": [],
+  "errors": [
+    "السيارة محجوزة بالفعل في هذه الفترة"
+  ]
+}
+```
+
 ---
 
-### 10.2 Get Active Bookings
-Retrieves upcoming and active bookings for the authenticated user (`status: pending, active`), ordered by `pickup_at` ascending. Maps to the **حجوزات نشطة** tab in Figma.
+### 10.2 Active Bookings
+Retrieves current and ongoing bookings (`pending`, `active`) for the authenticated user, with car details, primary image, and branches.
 
 - **Method**: `GET`
 - **URL**: `bookings/active`
@@ -948,35 +1146,26 @@ Retrieves upcoming and active bookings for the authenticated user (`status: pend
   "data": [
     {
       "id": 1,
-      "booking_number": "BH-2026-00001",
-      "user_id": 1,
-      "car_id": 1,
-      "pickup_branch_id": 1,
-      "return_branch_id": 1,
-      "pickup_at": "2026-09-25T10:00:00.000000Z",
-      "return_at": "2026-09-28T10:00:00.000000Z",
-      "daily_price": "500.00",
+      "booking_number": "BH-20261020-0001",
+      "pickup_at": "2026-10-20T10:00:00.000000Z",
+      "return_at": "2026-10-23T10:00:00.000000Z",
       "total_days": 3,
-      "subtotal": "1500.00",
-      "discount": "0.00",
-      "total": "1500.00",
-      "status": "pending",
-      "status_label": "قيد الانتظار",
+      "total": "675.00",
+      "status": "active",
+      "status_label": "نشطة",
       "car": {
         "id": 1,
-        "name": "مرسيدس E-Class",
-        "seats": 4,
-        "daily_price": "500.00",
-        "brand": { "id": 1, "name": "مرسيدس" },
-        "model_year": { "id": 1, "year": 2022 },
-        "transmission": { "id": 1, "name": "أوتوماتيك" },
-        "fuel_type": { "id": 1, "name": "بنزين" },
-        "primary_image": [
-          { "id": 1, "car_id": 1, "image_path": "cars/mercedes.png" }
-        ]
+        "name": "تويوتا كامري 2024",
+        "primary_image": "cars/camry_front.jpg"
       },
-      "pickup_branch": { "id": 1, "name": "فرع المطار" },
-      "return_branch": { "id": 1, "name": "فرع المطار" }
+      "pickup_branch": {
+        "id": 1,
+        "name": "فرع الرياض الرئيسي"
+      },
+      "return_branch": {
+        "id": 2,
+        "name": "فرع مطار الملك خالد"
+      }
     }
   ],
   "messages": [],
@@ -986,8 +1175,8 @@ Retrieves upcoming and active bookings for the authenticated user (`status: pend
 
 ---
 
-### 10.3 Get Closed Bookings
-Retrieves completed and cancelled past bookings for the authenticated user (`status: completed, cancelled`), ordered by `updated_at` descending. Maps to the **حجوزات مغلقة** tab in Figma.
+### 10.3 Closed Bookings (History)
+Retrieves completed and cancelled booking history (`completed`, `cancelled`) for the authenticated user.
 
 - **Method**: `GET`
 - **URL**: `bookings/closed`
@@ -1000,19 +1189,17 @@ Retrieves completed and cancelled past bookings for the authenticated user (`sta
   "data": [
     {
       "id": 2,
-      "booking_number": "BH-2026-00002",
+      "booking_number": "BH-20260901-0012",
+      "pickup_at": "2026-09-01T09:00:00.000000Z",
+      "return_at": "2026-09-04T09:00:00.000000Z",
+      "total_days": 3,
+      "total": "600.00",
       "status": "completed",
       "status_label": "مكتمل",
-      "daily_price": "450.00",
-      "total_days": 2,
-      "total": "900.00",
-      "pickup_at": "2026-09-10T10:00:00.000000Z",
-      "return_at": "2026-09-12T10:00:00.000000Z",
       "car": {
         "id": 2,
-        "name": "بي إم دبليو الفئة الخامسة",
-        "seats": 5,
-        "model_year": { "id": 2, "year": 2023 }
+        "name": "هيونداي إلنترا 2023",
+        "primary_image": "cars/elantra.jpg"
       }
     }
   ],
@@ -1023,17 +1210,12 @@ Retrieves completed and cancelled past bookings for the authenticated user (`sta
 
 ---
 
-### 10.4 Get Booking Details
-Retrieves complete booking details for a specific booking belonging to the authenticated user. Includes car specifications, branch contact details, pricing breakdown, and timestamps. Maps to the **تفاصيل الحجز** screen in Figma.
+### 10.4 Booking Details
+Fetches full details of a specific booking owned by the authenticated user.
 
 - **Method**: `GET`
 - **URL**: `bookings/{id}`
 - **Auth Required**: Yes (`Bearer <token>`)
-
-#### URL Parameters
-| Parameter | Type | Required | Description | Example |
-|---|---|---|---|---|
-| `id` | Integer | Yes | The Booking ID | `1` |
 
 #### Success Response (`200 OK`)
 ```json
@@ -1041,51 +1223,99 @@ Retrieves complete booking details for a specific booking belonging to the authe
   "code": 200,
   "data": {
     "id": 1,
-    "booking_number": "BH-2026-00001",
-    "user_id": 1,
-    "car_id": 1,
-    "pickup_branch_id": 1,
-    "return_branch_id": 1,
-    "pickup_at": "2026-09-25T10:00:00.000000Z",
-    "return_at": "2026-09-28T10:00:00.000000Z",
-    "daily_price": "500.00",
+    "booking_number": "BH-20261020-0001",
+    "pickup_at": "2026-10-20T10:00:00.000000Z",
+    "return_at": "2026-10-23T10:00:00.000000Z",
+    "daily_price": "250.00",
     "total_days": 3,
-    "subtotal": "1500.00",
-    "discount": "0.00",
-    "total": "1500.00",
-    "notes": "يرجى تجهيز السيارة في الموعد",
-    "status": "pending",
-    "status_label": "قيد الانتظار",
-    "created_at": "2026-09-19T12:00:00.000000Z",
-    "updated_at": "2026-09-19T12:00:00.000000Z",
+    "subtotal": "750.00",
+    "discount": "75.00",
+    "total": "675.00",
+    "coupon_code": "SAVE10",
+    "status": "active",
+    "status_label": "نشطة",
+    "notes": "يرجى تجهيز مقعد أطفال",
     "car": {
       "id": 1,
-      "name": "مرسيدس E-Class",
-      "seats": 4,
-      "daily_price": "500.00",
-      "brand": { "id": 1, "name": "مرسيدس" },
-      "model_year": { "id": 1, "year": 2022 },
-      "transmission": { "id": 1, "name": "أوتوماتيك" },
-      "fuel_type": { "id": 1, "name": "بنزين" },
-      "primary_image": [
-        { "id": 1, "car_id": 1, "image_path": "cars/mercedes.png" }
-      ]
+      "name": "تويوتا كامري 2024",
+      "daily_price": "250.00",
+      "primary_image": "cars/camry_front.jpg"
     },
     "pickup_branch": {
       "id": 1,
-      "name": "فرع المطار",
-      "address": "مطار الملك خالد الدولي",
-      "phone": "966500000000"
+      "name": "فرع الرياض الرئيسي",
+      "address": "طريق الملك فهد، الرياض"
     },
     "return_branch": {
-      "id": 1,
-      "name": "فرع المطار",
-      "address": "مطار الملك خالد الدولي",
-      "phone": "966500000000"
+      "id": 2,
+      "name": "فرع مطار الملك خالد",
+      "address": "صالة 2، مطار الملك خالد"
     }
   },
   "messages": [],
   "errors": []
+}
+```
+
+---
+
+## 11. Coupons & Discounts
+
+### 11.1 Apply Discount Coupon
+Validates a discount coupon code against booking subtotal, user eligibility, date window, and usage limits, and returns the calculated discount and final total.
+
+- **Method**: `POST`
+- **URL**: `coupons/apply`
+- **Auth Required**: Yes (`Bearer <token>`)
+- **Content-Type**: `multipart/form-data`
+
+#### Request Body
+| Parameter | Type | Required | Description / Rules | Example |
+|---|---|---|---|---|
+| `code` | String | Yes | Coupon code (max: 50) | `DISCOUNT15` |
+| `subtotal` | Numeric | Yes | Subtotal booking amount (min: 0) | `1000` |
+
+#### Success Response (`200 OK`)
+```json
+{
+  "code": 200,
+  "data": {
+    "coupon_id": 1,
+    "coupon_code": "DISCOUNT15",
+    "discount_type": "percentage",
+    "discount_value": 15.0,
+    "subtotal": 1000.0,
+    "discount_amount": 150.0,
+    "total": 850.0
+  },
+  "messages": [
+    "تم تطبيق كوبون الخصم بنجاح"
+  ],
+  "errors": []
+}
+```
+
+#### Error Response (`400 Bad Request` - Expired Coupon)
+```json
+{
+  "code": 400,
+  "data": null,
+  "messages": [],
+  "errors": [
+    "كوبون الخصم منتهي الصلاحية"
+  ]
+}
+```
+
+#### Error Response (`400 Bad Request` - Minimum Amount Not Met)
+```json
+{
+  "code": 400,
+  "data": null,
+  "messages": [],
+  "errors": [
+    "قيمة الحجز أقل من الحد الأدنى لاستخدام الكوبون"
+  ]
 }
 ```
 
