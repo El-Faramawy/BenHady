@@ -53,9 +53,13 @@ class Booking extends Model
 
     public function getStatusLabelAttribute(): string
     {
-        return $this->status instanceof BookingStatusEnum
-            ? $this->status->label()
-            : BookingStatusEnum::from((string) $this->status)->label();
+        if ($this->status instanceof BookingStatusEnum) {
+            return $this->status->label();
+        }
+
+        $enum = BookingStatusEnum::tryFrom((string) $this->status);
+
+        return $enum?->label() ?? (string) $this->status;
     }
 
     public function user(): BelongsTo

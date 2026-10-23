@@ -116,12 +116,17 @@
 
                 <div class="col-sm-12 mb-3">
                     <label class="font-weight-bold">الفروع الإضافية المتاح استلام السيارة منها (اختياري)</label>
-                    <div class="row p-2 border rounded bg-light" style="max-height: 140px; overflow-y: auto;">
+                    <div class="row p-2 border rounded bg-light" style="max-height: 160px; overflow-y: auto;">
                         @foreach($branches as $branch)
-                            <div class="col-md-4 col-sm-6">
-                                <label class="custom-control custom-checkbox">
-                                    <input type="checkbox" class="custom-control-input" name="branches[]" value="{{ $branch->id }}">
-                                    <span class="custom-control-label font-size-13">{{ $branch->name_ar }}</span>
+                            <div class="col-md-4 col-sm-6 mb-2">
+                                <label class="branch-checkbox-card d-flex align-items-center justify-content-between">
+                                    <span class="font-weight-bold font-size-13 text-dark">
+                                        <i class="fa fa-map-marker ml-1 text-primary"></i>{{ $branch->name_ar }}
+                                    </span>
+                                    <div class="custom-control custom-checkbox m-0 p-0">
+                                        <input type="checkbox" class="custom-control-input branch-input" name="branches[]" value="{{ $branch->id }}" id="br_create_{{ $branch->id }}">
+                                        <label class="custom-control-label" for="br_create_{{ $branch->id }}"></label>
+                                    </div>
                                 </label>
                             </div>
                         @endforeach
@@ -129,20 +134,61 @@
                 </div>
 
                 <div class="col-sm-12">
-                    <label class="font-weight-bold d-block">خيارات العرض</label>
-                    <div class="custom-controls-stacked mt-1">
-                        <label class="custom-control custom-checkbox custom-control-inline">
-                            <input type="checkbox" class="custom-control-input" name="is_active" value="1" checked>
-                            <span class="custom-control-label">تفعيل السيارة في التطبيق</span>
-                        </label>
-                        <label class="custom-control custom-checkbox custom-control-inline">
-                            <input type="checkbox" class="custom-control-input" name="is_featured" value="1">
-                            <span class="custom-control-label">مميزة (Featured)</span>
-                        </label>
-                        <label class="custom-control custom-checkbox custom-control-inline">
-                            <input type="checkbox" class="custom-control-input" name="is_handpicked" value="1">
-                            <span class="custom-control-label">مختارة بعناية (Handpicked)</span>
-                        </label>
+                    <label class="font-weight-bold d-block mb-2">خيارات العرض والظهور</label>
+                    <div class="row">
+                        <div class="col-md-4 col-sm-12 mb-2">
+                            <label class="toggle-switch-card d-flex align-items-center justify-content-between p-3 border rounded shadow-sm is-checked">
+                                <div class="d-flex align-items-center">
+                                    <div class="toggle-icon-wrap ml-2">
+                                        <i class="fa fa-power-off text-success font-size-16"></i>
+                                    </div>
+                                    <div>
+                                        <span class="font-weight-bold d-block text-dark font-size-13">تفعيل في التطبيق</span>
+                                        <small class="text-muted">إظهار السيارة للمستخدمين</small>
+                                    </div>
+                                </div>
+                                <div class="custom-switch-btn">
+                                    <input type="checkbox" name="is_active" value="1" class="switch-btn-input" id="switch_is_active_create" checked>
+                                    <label class="switch-btn-slider" for="switch_is_active_create"></label>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="col-md-4 col-sm-12 mb-2">
+                            <label class="toggle-switch-card d-flex align-items-center justify-content-between p-3 border rounded shadow-sm">
+                                <div class="d-flex align-items-center">
+                                    <div class="toggle-icon-wrap ml-2">
+                                        <i class="fa fa-star text-warning font-size-16"></i>
+                                    </div>
+                                    <div>
+                                        <span class="font-weight-bold d-block text-dark font-size-13">سيارة مميزة (Featured)</span>
+                                        <small class="text-muted">تثبيت في قسم المميزة</small>
+                                    </div>
+                                </div>
+                                <div class="custom-switch-btn">
+                                    <input type="checkbox" name="is_featured" value="1" class="switch-btn-input" id="switch_is_featured_create">
+                                    <label class="switch-btn-slider" for="switch_is_featured_create"></label>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="col-md-4 col-sm-12 mb-2">
+                            <label class="toggle-switch-card d-flex align-items-center justify-content-between p-3 border rounded shadow-sm">
+                                <div class="d-flex align-items-center">
+                                    <div class="toggle-icon-wrap ml-2">
+                                        <i class="fa fa-thumbs-up text-primary font-size-16"></i>
+                                    </div>
+                                    <div>
+                                        <span class="font-weight-bold d-block text-dark font-size-13">مختارة بعناية (Handpicked)</span>
+                                        <small class="text-muted">ضمن الاختيارات الموصى بها</small>
+                                    </div>
+                                </div>
+                                <div class="custom-switch-btn">
+                                    <input type="checkbox" name="is_handpicked" value="1" class="switch-btn-input" id="switch_is_handpicked_create">
+                                    <label class="switch-btn-slider" for="switch_is_handpicked_create"></label>
+                                </div>
+                            </label>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -153,17 +199,20 @@
             <div class="alert alert-info font-size-13 py-2 mb-3">
                 <i class="fa fa-info-circle ml-1"></i>حدد المميزات والتجهيزات المتوفرة في هذه السيارة:
             </div>
-            <div class="row p-2 border rounded bg-light" style="max-height: 280px; overflow-y: auto;">
+            <div class="row p-2 border rounded bg-light" style="max-height: 320px; overflow-y: auto;">
                 @foreach($features as $feature)
                     <div class="col-md-4 col-sm-6 mb-2">
-                        <label class="custom-control custom-checkbox d-flex align-items-center mb-0" style="cursor: pointer;">
-                            <input type="checkbox" class="custom-control-input" name="features[]" value="{{ $feature->id }}">
-                            <span class="custom-control-label d-flex align-items-center">
+                        <label class="feature-checkbox-card d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
                                 @if($feature->icon)
-                                    <span class="ml-2">{!! featureIcon($feature->icon) !!}</span>
+                                    <span class="feature-icon-badge ml-2">{!! featureIcon($feature->icon) !!}</span>
                                 @endif
-                                <span class="font-weight-bold font-size-13">{{ $feature->name_ar }}</span>
-                            </span>
+                                <span class="font-weight-bold font-size-13 text-dark">{{ $feature->name_ar }}</span>
+                            </div>
+                            <div class="custom-control custom-checkbox m-0 p-0">
+                                <input type="checkbox" class="custom-control-input feature-input" name="features[]" value="{{ $feature->id }}" id="feat_create_{{ $feature->id }}">
+                                <label class="custom-control-label" for="feat_create_{{ $feature->id }}"></label>
+                            </div>
                         </label>
                     </div>
                 @endforeach

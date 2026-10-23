@@ -60,4 +60,15 @@ class BookingController extends Controller
             ->setData($booking)
             ->create();
     }
+
+    public function complete(int $id): JsonResponse
+    {
+        $userId = (int) auth()->id();
+        $booking = $this->bookingService->completeBooking($id, $userId);
+
+        return (new ApiResponse())
+            ->setData($booking)
+            ->setMessages([__('messages.general.updated_success')])
+            ->create();
+    }
 }

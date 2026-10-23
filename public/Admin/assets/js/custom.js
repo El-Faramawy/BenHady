@@ -36,9 +36,12 @@
 	})
 	
 	// ______________ PAGE LOADING
+	$(document).ready(function() {
+		$("#global-loader").fadeOut(200);
+	});
 	$(window).on("load", function(e) {
-		$("#global-loader").fadeOut("slow");
-	})
+		$("#global-loader").fadeOut(200);
+	});
 	
 	// ______________ BACK TO TOP BUTTON
 	$(window).on("scroll", function(e) {
@@ -124,7 +127,9 @@
 			targetFormElementSelector: '.rating-value'
 		}
 	};
-	$(".rating-stars").ratingStars(ratingOptions);
+	if ($.fn.ratingStars && $(".rating-stars").length) {
+		$(".rating-stars").ratingStars(ratingOptions);
+	}
 	
 	// ______________ mCustomScrollbar
 	$(".vscroll").mCustomScrollbar();

@@ -51,7 +51,7 @@ class BookingRepository
             ->orderBy('pickup_at', 'asc')
             ->get();
 
-        return $bookings->each(fn (Booking $b) => $this->hideRawLocalizedAttributes($b));
+        return $bookings->each(fn(Booking $b) => $this->hideRawLocalizedAttributes($b));
     }
 
     /**
@@ -66,7 +66,7 @@ class BookingRepository
             ->orderBy('updated_at', 'desc')
             ->get();
 
-        return $bookings->each(fn (Booking $b) => $this->hideRawLocalizedAttributes($b));
+        return $bookings->each(fn(Booking $b) => $this->hideRawLocalizedAttributes($b));
     }
 
     public function hasOverlappingBooking(int $carId, string $pickupAt, string $returnAt, ?int $ignoreBookingId = null): bool
@@ -77,7 +77,7 @@ class BookingRepository
             ->where(function ($q) use ($pickupAt, $returnAt) {
                 // Check time overlap: existing.pickup_at < new.return_at AND existing.return_at > new.pickup_at
                 $q->where('pickup_at', '<', $returnAt)
-                  ->where('return_at', '>', $pickupAt);
+                    ->where('return_at', '>', $pickupAt);
             });
 
         if ($ignoreBookingId !== null) {
@@ -130,12 +130,12 @@ class BookingRepository
                     'seats',
                     'daily_price',
                 ])->with([
-                    'brand:id,name_ar,name_en',
-                    'modelYear:id,year',
-                    'transmission:id,name_ar,name_en',
-                    'fuelType:id,name_ar,name_en',
-                    'primaryImage:id,car_id,image_path',
-                ]);
+                            'brand:id,name_ar,name_en',
+                            'modelYear:id,year',
+                            'transmission:id,name_ar,name_en',
+                            'fuelType:id,name_ar,name_en',
+                            'primaryImage:id,car_id,image_path',
+                        ]);
             },
             'pickupBranch:' . $branchFields,
             'returnBranch:' . $branchFields,
@@ -252,5 +252,92 @@ class BookingRepository
     public function deleteMultiple(array $ids): int
     {
         return $this->model->newQuery()->whereIn('id', $ids)->delete();
+    }
+
+    /**
+     * Get total count of bookings.
+     */
+    public function getTotalCount(): int
+    {
+        return $this->model->newQuery()->count();
+    }
+
+    /**
+     * Get count of bookings by status.
+     *
+     * @return array<string, int>
+     */
+    public function getStatusCounts(): array
+    {
+        return [
+            'pending' => $this->model->newQuery()->where('status', BookingStatusEnum::PENDING->value)->count(),
+            'active' => $this->model->newQuery()->where('status', BookingStatusEnum::ACTIVE->value)->count(),
+            'completed' => $this->model->newQuery()->where('status', BookingStatusEnum::COMPLETED->value)->count(),
+            'cancelled' => $this->model->newQuery()->where('status', BookingStatusEnum::CANCELLED->value)->count(),
+        ];
+    }
+
+    /**
+     * Get total revenue from active and completed bookings.
+     */
+    public function getTotalRevenue(): float
+    {
+        return (float) $this->model->newQuery()
+            ->whereIn('status', [BookingStatusEnum::ACTIVE->value, BookingStatusEnum::COMPLETED->value])
+            ->sum('total');
+    }
+
+    /**
+     * Get monthly metrics for chart visualization.
+     *
+     * @return array{labels: array<string>, revenue: array<float>, bookings: array<int>}
+     */
+    public function getMonthlyRevenue(int $months = 6): array
+    {
+        $labels = [];
+        $revenue = [];
+        $bookings = [];
+
+        $startOfCurrentMonth = now()->startOfMonth();
+        $startDate = (clone $startOfCurrentMonth)->subMonthsNoOverflow($months - 1)->startOfMonth();
+
+        $rows = $this->model->newQuery()
+            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as ym,
+                         COUNT(*) as total_count,
+                         SUM(CASE WHEN status IN (?, ?) THEN total ELSE 0 END) as total_sum",
+                         [BookingStatusEnum::ACTIVE->value, BookingStatusEnum::COMPLETED->value])
+            ->where('created_at', '>=', $startDate)
+            ->groupBy('ym')
+            ->get()
+            ->keyBy('ym');
+
+        for ($i = $months - 1; $i >= 0; $i--) {
+            $monthDate = (clone $startOfCurrentMonth)->subMonthsNoOverflow($i);
+            $ym = $monthDate->format('Y-m');
+
+            $labels[] = $monthDate->translatedFormat('F');
+            $revenue[] = isset($rows[$ym]) ? round((float) $rows[$ym]->total_sum, 2) : 0.0;
+            $bookings[] = isset($rows[$ym]) ? (int) $rows[$ym]->total_count : 0;
+        }
+
+        return [
+            'labels' => $labels,
+            'revenue' => $revenue,
+            'bookings' => $bookings,
+        ];
+    }
+
+    /**
+     * Get latest bookings with relations for dashboard activity feed.
+     *
+     * @return Collection<int, Booking>
+     */
+    public function getLatestBookings(int $limit = 6): Collection
+    {
+        return $this->model->newQuery()
+            ->with(['user', 'car.brand', 'car.primaryImage', 'pickupBranch'])
+            ->latest('id')
+            ->take($limit)
+            ->get();
     }
 }

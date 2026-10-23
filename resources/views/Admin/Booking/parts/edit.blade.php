@@ -11,8 +11,7 @@
         </div>
 
         <!-- User selection via Select2 -->
-        <div class="col-sm-12 mb-3">
-            <label class="font-weight-bold font-size-13">العميل / المستخدم <span class="text-danger">*</span></label>
+        <x-form.input class="col-sm-12" title="العميل / المستخدم" :required="true">
             <select name="user_id" class="form-control select2-user" required>
                 <option value="">-- ابحث باسم أو هاتف العميل --</option>
                 @foreach($users as $user)
@@ -21,14 +20,18 @@
                     </option>
                 @endforeach
             </select>
-        </div>
+        </x-form.input>
 
         <!-- Car Selection -->
         <x-form.input class="col-sm-6" title="السيارة" :required="true">
             <select name="car_id" id="booking_car_select_edit" class="form-control form-control-solid" required>
                 <option value="">-- اختر السيارة --</option>
                 @foreach($cars as $car)
-                    <option value="{{ $car->id }}" data-price="{{ (float) $car->daily_price }}" {{ $booking->car_id == $car->id ? 'selected' : '' }}>
+                    <option value="{{ $car->id }}" 
+                            data-price="{{ (float) $car->daily_price }}"
+                            data-current-branch-id="{{ $car->branch_id }}"
+                            data-branches='{{ $car->branches_json }}'
+                            {{ $booking->car_id == $car->id ? 'selected' : '' }}>
                         {{ $car->name_ar }} ({{ $car->name_en }}) - {{ number_format((float) $car->daily_price, 2) }} ر.س/يوم
                     </option>
                 @endforeach
@@ -48,7 +51,7 @@
 
         <!-- Pickup & Return Branch -->
         <x-form.input class="col-sm-6" title="فرع الاستلام" :required="true">
-            <select name="pickup_branch_id" class="form-control form-control-solid" required>
+            <select name="pickup_branch_id" id="pickup_branch_select_edit" class="form-control form-control-solid" required>
                 <option value="">-- اختر فرع الاستلام --</option>
                 @foreach($branches as $branch)
                     <option value="{{ $branch->id }}" {{ $booking->pickup_branch_id == $branch->id ? 'selected' : '' }}>{{ $branch->name_ar }}</option>
@@ -57,7 +60,7 @@
         </x-form.input>
 
         <x-form.input class="col-sm-6" title="فرع التسليم" :required="true">
-            <select name="return_branch_id" class="form-control form-control-solid" required>
+            <select name="return_branch_id" id="return_branch_select_edit" class="form-control form-control-solid" required>
                 <option value="">-- اختر فرع التسليم --</option>
                 @foreach($branches as $branch)
                     <option value="{{ $branch->id }}" {{ $booking->return_branch_id == $branch->id ? 'selected' : '' }}>{{ $branch->name_ar }}</option>
@@ -68,10 +71,11 @@
         <!-- Dates & Times -->
         <x-form.input class="col-sm-6" title="موعد الاستلام" :required="true">
             <input type="datetime-local" class="form-control form-control-solid" id="calc_pickup_at_edit" name="pickup_at" value="{{ $booking->pickup_at?->format('Y-m-d\TH:i') }}" required/>
+            <small id="availability_hint_edit" class="font-size-11 mt-1 d-block"></small>
         </x-form.input>
 
         <x-form.input class="col-sm-6" title="موعد التسليم" :required="true">
-            <input type="datetime-local" class="form-control form-control-solid" id="calc_return_at_edit" name="return_at" value="{{ $booking->return_at?->format('Y-m-d\TH:i') }}" required/>
+            <input type="datetime-local" class="form-control form-control-solid" id="calc_return_at_edit" name="return_at" min="{{ $booking->pickup_at?->format('Y-m-d\TH:i') }}" value="{{ $booking->return_at?->format('Y-m-d\TH:i') }}" required/>
         </x-form.input>
 
         <!-- Pricing & Calculations -->
@@ -93,10 +97,9 @@
         </div>
 
         <!-- Notes -->
-        <div class="col-sm-12 mb-3">
-            <label class="font-weight-bold font-size-13">ملاحظات الحجز</label>
+        <x-form.input class="col-sm-12 mb-3" title="ملاحظات الحجز" :required="false">
             <textarea name="notes" class="form-control form-control-solid" rows="2" placeholder="ملاحظات الحجز">{{ $booking->notes }}</textarea>
-        </div>
+        </x-form.input>
     </div>
 
     <script>
@@ -127,14 +130,96 @@
             $('#calc_preview_total_edit').text(total.toFixed(2));
         }
 
-        $('#booking_car_select_edit').on('change', function () {
-            var carPrice = $(this).find('option:selected').data('price');
+        function fetchEarliestAvailabilityEdit() {
+            var carId = $('#booking_car_select_edit').val();
+            var branchId = $('#pickup_branch_select_edit').val();
+            if (!carId || !branchId) return;
+
+            $('#availability_hint_edit').html('<span class="text-muted"><i class="fa fa-spinner fa-spin ml-1 text-primary"></i>جاري التحقق من المواعيد المتاحة...</span>');
+
+            $.ajax({
+                url: "{{ route('bookings.car_availability') }}",
+                type: 'GET',
+                data: {
+                    car_id: carId,
+                    branch_id: branchId,
+                    ignore_booking_id: {{ $booking->id }}
+                },
+                success: function (res) {
+                    if (res && res.pickup_at) {
+                        $('#availability_hint_edit').html('<span class="text-success font-weight-600"><i class="fa fa-check-circle ml-1"></i>أول موعد متاح للاستلام: ' + res.pickup_at.replace('T', ' ') + '</span>');
+                    }
+                },
+                error: function () {
+                    $('#availability_hint_edit').empty();
+                }
+            });
+        }
+
+        function updatePickupBranchesForSelectedCarEdit() {
+            var $carOption = $('#booking_car_select_edit option:selected');
+            var carPrice = $carOption.data('price');
+            var currentBranchId = $carOption.data('current-branch-id');
+            var branches = $carOption.data('branches');
+            var currentPickupVal = $('#pickup_branch_select_edit').val();
+
             if (carPrice) {
                 $('#calc_daily_price_edit').val(parseFloat(carPrice).toFixed(2));
+            }
+
+            var $pickupSelect = $('#pickup_branch_select_edit');
+            $pickupSelect.empty();
+
+            if (!branches || branches.length === 0) {
+                $pickupSelect.append('<option value="">-- لا توجد فروع مسجلة لهذه السيارة --</option>');
+                return;
+            }
+
+            $pickupSelect.append('<option value="">-- اختر فرع الاستلام --</option>');
+
+            var hasSelected = false;
+            $.each(branches, function (idx, branch) {
+                var isSelected = (currentPickupVal && branch.id == currentPickupVal) || (!currentPickupVal && currentBranchId && branch.id == currentBranchId);
+                if (isSelected) {
+                    hasSelected = true;
+                }
+                var label = branch.name + (branch.id == currentBranchId ? ' (الفرع الحالي للسيارة)' : '');
+                $pickupSelect.append('<option value="' + branch.id + '" ' + (isSelected ? 'selected' : '') + '>' + label + '</option>');
+            });
+
+            if (!hasSelected && currentBranchId) {
+                $pickupSelect.val(currentBranchId);
+            }
+
+            fetchEarliestAvailabilityEdit();
+            recalculateBookingSummaryEdit();
+        }
+
+        $('#booking_car_select_edit').on('change', function () {
+            updatePickupBranchesForSelectedCarEdit();
+        });
+
+        $('#pickup_branch_select_edit').on('change', function () {
+            fetchEarliestAvailabilityEdit();
+        });
+
+        $('#calc_pickup_at_edit').on('change input', function () {
+            var val = $(this).val();
+            if (val) {
+                $('#calc_return_at_edit').attr('min', val);
+                var currentReturn = $('#calc_return_at_edit').val();
+                if (currentReturn && new Date(currentReturn) <= new Date(val)) {
+                    var pDate = new Date(val);
+                    pDate.setDate(pDate.getDate() + 2);
+                    var pad = function (n) { return n < 10 ? '0' + n : n; };
+                    var newReturn = pDate.getFullYear() + '-' + pad(pDate.getMonth() + 1) + '-' + pad(pDate.getDate()) + 'T' + pad(pDate.getHours()) + ':' + pad(pDate.getMinutes());
+                    $('#calc_return_at_edit').val(newReturn);
+                }
             }
             recalculateBookingSummaryEdit();
         });
 
-        $('#calc_pickup_at_edit, #calc_return_at_edit, #calc_daily_price_edit, #calc_discount_edit').on('input change', recalculateBookingSummaryEdit);
+        $('#calc_return_at_edit, #calc_daily_price_edit, #calc_discount_edit').on('input change', recalculateBookingSummaryEdit);
+        recalculateBookingSummaryEdit();
     </script>
 </form>

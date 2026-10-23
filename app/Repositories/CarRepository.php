@@ -426,4 +426,58 @@ class CarRepository
             ->orderBy('id', 'desc')
             ->get();
     }
+
+    /**
+     * Get total count of cars.
+     */
+    public function getTotalCount(): int
+    {
+        return $this->model->newQuery()->count();
+    }
+
+    /**
+     * Get count of cars grouped by status.
+     *
+     * @return array<string, int>
+     */
+    public function getStatusCounts(): array
+    {
+        return [
+            'available' => $this->model->newQuery()->where('status', 'available')->count(),
+            'rented' => $this->model->newQuery()->where('status', 'rented')->count(),
+            'maintenance' => $this->model->newQuery()->where('status', 'maintenance')->count(),
+            'reserved' => $this->model->newQuery()->where('status', 'reserved')->count(),
+        ];
+    }
+
+    /**
+     * Get top rented cars with primary images.
+     *
+     * @return Collection<int, Car>
+     */
+    public function getTopRentedCars(int $limit = 5): Collection
+    {
+        return $this->model->newQuery()
+            ->withCount('bookings')
+            ->with(['brand', 'category', 'primaryImage', 'modelYear'])
+            ->orderByDesc('bookings_count')
+            ->take($limit)
+            ->get();
+    }
+
+    /**
+     * Get car distribution by category.
+     *
+     * @return array<string, int>
+     */
+    public function getCategoryDistribution(): array
+    {
+        return $this->model->newQuery()
+            ->join('categories', 'cars.category_id', '=', 'categories.id')
+            ->selectRaw('categories.name_ar as category_name, count(cars.id) as car_count')
+            ->groupBy('categories.id', 'categories.name_ar')
+            ->orderByDesc('car_count')
+            ->pluck('car_count', 'category_name')
+            ->toArray();
+    }
 }

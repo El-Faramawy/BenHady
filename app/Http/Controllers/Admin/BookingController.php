@@ -38,10 +38,40 @@ class BookingController extends Controller
     public function create(): View
     {
         $users = User::query()->select(['id', 'name', 'phone'])->orderBy('name')->get();
-        $cars = Car::query()->where('is_active', true)->select(['id', 'name_ar', 'name_en', 'daily_price'])->orderBy('name_ar')->get();
+        $cars = Car::query()
+            ->where('is_active', true)
+            ->with(['branches:id,name_ar', 'branch:id,name_ar'])
+            ->select(['id', 'branch_id', 'name_ar', 'name_en', 'daily_price'])
+            ->orderBy('name_ar')
+            ->get();
         $branches = Branch::query()->where('is_active', true)->select(['id', 'name_ar'])->orderBy('name_ar')->get();
 
+        $cars->each(function (Car $car) {
+            $list = $car->branches->map(fn($b) => ['id' => $b->id, 'name' => $b->name_ar])->values()->all();
+            if (empty($list) && $car->branch) {
+                $list = [['id' => $car->branch->id, 'name' => $car->branch->name_ar]];
+            } elseif (!empty($list) && $car->branch && !collect($list)->contains('id', $car->branch->id)) {
+                $list[] = ['id' => $car->branch->id, 'name' => $car->branch->name_ar];
+            }
+            $car->setAttribute('branches_json', json_encode($list, JSON_UNESCAPED_UNICODE));
+        });
+
         return view('Admin.Booking.parts.create', compact('users', 'cars', 'branches'));
+    }
+
+    public function getCarAvailability(Request $request): JsonResponse
+    {
+        $carId = (int) $request->query('car_id');
+        $branchId = (int) $request->query('branch_id');
+        $ignoreBookingId = $request->filled('ignore_booking_id') ? (int) $request->query('ignore_booking_id') : null;
+
+        if (!$carId || !$branchId) {
+            return response()->json(['error' => 'Missing parameters'], 422);
+        }
+
+        $availability = $this->bookingService->getEarliestAvailablePickup($carId, $branchId, $ignoreBookingId);
+
+        return response()->json($availability);
     }
 
     public function store(StoreBookingRequest $request): JsonResponse
@@ -69,8 +99,22 @@ class BookingController extends Controller
     public function edit(Booking $booking): View
     {
         $users = User::query()->select(['id', 'name', 'phone'])->orderBy('name')->get();
-        $cars = Car::query()->select(['id', 'name_ar', 'name_en', 'daily_price'])->orderBy('name_ar')->get();
+        $cars = Car::query()
+            ->with(['branches:id,name_ar', 'branch:id,name_ar'])
+            ->select(['id', 'branch_id', 'name_ar', 'name_en', 'daily_price'])
+            ->orderBy('name_ar')
+            ->get();
         $branches = Branch::query()->select(['id', 'name_ar'])->orderBy('name_ar')->get();
+
+        $cars->each(function (Car $car) {
+            $list = $car->branches->map(fn($b) => ['id' => $b->id, 'name' => $b->name_ar])->values()->all();
+            if (empty($list) && $car->branch) {
+                $list = [['id' => $car->branch->id, 'name' => $car->branch->name_ar]];
+            } elseif (!empty($list) && $car->branch && !collect($list)->contains('id', $car->branch->id)) {
+                $list[] = ['id' => $car->branch->id, 'name' => $car->branch->name_ar];
+            }
+            $car->setAttribute('branches_json', json_encode($list, JSON_UNESCAPED_UNICODE));
+        });
 
         return view('Admin.Booking.parts.edit', compact('booking', 'users', 'cars', 'branches'));
     }

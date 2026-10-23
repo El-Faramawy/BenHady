@@ -23,7 +23,7 @@ class StoreBookingRequest extends FormRequest
             'car_id'           => ['required', 'integer', 'exists:cars,id'],
             'pickup_branch_id' => ['required', 'integer', 'exists:branches,id'],
             'return_branch_id' => ['required', 'integer', 'exists:branches,id'],
-            'pickup_at'        => ['required', 'date'],
+            'pickup_at'        => ['required', 'date', 'after_or_equal:today'],
             'return_at'        => ['required', 'date', 'after:pickup_at'],
             'daily_price'      => ['nullable', 'numeric', 'min:0'],
             'discount'         => ['nullable', 'numeric', 'min:0'],

@@ -5,25 +5,6 @@
 
 @push('admin_css')
     <link href="{{url('Admin')}}/assets/plugins/fileuploads/css/fileupload.css" rel="stylesheet" type="text/css" />
-    <style>
-        #Modal .modal-dialog {
-            max-width: 950px !important;
-        }
-        .car-nav-tabs .nav-link {
-            font-weight: 700;
-            padding: 10px 18px;
-            border-radius: 8px !important;
-            color: #475569;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            margin-left: 6px;
-        }
-        .car-nav-tabs .nav-link.active {
-            background: #525ce5 !important;
-            color: #ffffff !important;
-            border-color: #525ce5 !important;
-        }
-    </style>
 @endpush
 
 @section('content')
@@ -79,6 +60,15 @@
                     'error':   'حدث خطأ في الملف'
                 }
             });
+        });
+
+        $(function () {
+            var urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('create') === '1' || urlParams.get('action') === 'create') {
+                setTimeout(function() {
+                    $('#addBtn').trigger('click');
+                }, 300);
+            }
         });
     </script>
     @include('layouts.admin.inc.ajax', ['url' => 'cars'])

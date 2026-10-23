@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Booking;
 
 use App\Enums\Booking\BookingStatusEnum;
+use App\Enums\Branch\DayOfWeekEnum;
 use App\Enums\Car\CarStatusEnum;
 use App\Exceptions\Booking\BookingOverlapException;
 use App\Exceptions\Booking\BranchClosedException;
@@ -18,6 +19,7 @@ use App\Services\Coupon\CouponService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\DataTables;
 
 class BookingService
@@ -221,10 +223,34 @@ class BookingService
      * Store a new booking from Admin.
      *
      * @param array<string, mixed> $data
+     * @throws BranchClosedException
+     * @throws CarNotAvailableException
+     * @throws BookingOverlapException
      */
     public function storeFromAdmin(array $data): Booking
     {
         $car = $this->carRepository->findActiveByIdOrFail((int) $data['car_id']);
+
+        $pickupBranch = $this->branchRepository->findActiveById((int) $data['pickup_branch_id']);
+        if (!$pickupBranch) {
+            throw new BranchClosedException();
+        }
+
+        if (!$this->branchRepository->isCarAvailableAtBranch((int) $data['car_id'], (int) $data['pickup_branch_id'])) {
+            throw new CarNotAvailableException();
+        }
+
+        $returnBranch = $this->branchRepository->findActiveById((int) $data['return_branch_id']);
+        if (!$returnBranch) {
+            throw new BranchClosedException();
+        }
+
+        $this->branchAvailabilityService->validatePickupTime((int) $data['pickup_branch_id'], $data['pickup_at']);
+        $this->branchAvailabilityService->validateReturnTime((int) $data['return_branch_id'], $data['return_at']);
+
+        if ($this->bookingRepository->hasOverlappingBooking((int) $data['car_id'], (string) $data['pickup_at'], (string) $data['return_at'])) {
+            throw new BookingOverlapException();
+        }
 
         $pickupCarbon = Carbon::parse($data['pickup_at']);
         $returnCarbon = Carbon::parse($data['return_at']);
@@ -253,16 +279,52 @@ class BookingService
             $data['status'] = BookingStatusEnum::PENDING->value;
         }
 
-        return $this->bookingRepository->create($data);
+        $booking = $this->bookingRepository->create($data);
+
+        $statusVal = $booking->status instanceof BookingStatusEnum ? $booking->status->value : (string) $booking->status;
+        if ($statusVal === BookingStatusEnum::COMPLETED->value) {
+            $this->syncCarLocationOnCompletion($booking);
+        }
+
+        return $booking;
     }
 
     /**
      * Update an existing booking from Admin.
      *
      * @param array<string, mixed> $data
+     * @throws BranchClosedException
+     * @throws CarNotAvailableException
+     * @throws BookingOverlapException
      */
     public function updateFromAdmin(Booking $booking, array $data): bool
     {
+        $carId = isset($data['car_id']) ? (int) $data['car_id'] : (int) $booking->car_id;
+        $pickupBranchId = isset($data['pickup_branch_id']) ? (int) $data['pickup_branch_id'] : (int) $booking->pickup_branch_id;
+        $returnBranchId = isset($data['return_branch_id']) ? (int) $data['return_branch_id'] : (int) $booking->return_branch_id;
+        $pickupAt = $data['pickup_at'] ?? $booking->pickup_at?->format('Y-m-d H:i:s');
+        $returnAt = $data['return_at'] ?? $booking->return_at?->format('Y-m-d H:i:s');
+
+        if (isset($data['pickup_branch_id']) || isset($data['car_id'])) {
+            if (!$this->branchRepository->isCarAvailableAtBranch($carId, $pickupBranchId)) {
+                throw new CarNotAvailableException();
+            }
+        }
+
+        if (isset($data['pickup_branch_id']) || isset($data['pickup_at'])) {
+            $this->branchAvailabilityService->validatePickupTime($pickupBranchId, $pickupAt);
+        }
+
+        if (isset($data['return_branch_id']) || isset($data['return_at'])) {
+            $this->branchAvailabilityService->validateReturnTime($returnBranchId, $returnAt);
+        }
+
+        if (isset($data['pickup_at']) || isset($data['return_at']) || isset($data['car_id'])) {
+            if ($this->bookingRepository->hasOverlappingBooking($carId, (string) $pickupAt, (string) $returnAt, $booking->id)) {
+                throw new BookingOverlapException();
+            }
+        }
+
         if (isset($data['pickup_at'], $data['return_at'])) {
             $pickupCarbon = Carbon::parse($data['pickup_at']);
             $returnCarbon = Carbon::parse($data['return_at']);
@@ -281,7 +343,178 @@ class BookingService
             $data['total'] = max(0.00, round($subtotal - $discount, 2));
         }
 
-        return $this->bookingRepository->update($booking, $data);
+        $result = $this->bookingRepository->update($booking, $data);
+
+        $booking->refresh();
+        $statusVal = $booking->status instanceof BookingStatusEnum ? $booking->status->value : (string) $booking->status;
+        if ($statusVal === BookingStatusEnum::COMPLETED->value) {
+            $this->syncCarLocationOnCompletion($booking);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Complete a booking from API or system and relocate car if needed.
+     */
+    public function completeBooking(int $bookingId, int $userId): Booking
+    {
+        $booking = $this->bookingRepository->findByIdAndUser($bookingId, $userId);
+
+        $this->bookingRepository->update($booking, [
+            'status' => BookingStatusEnum::COMPLETED->value,
+        ]);
+
+        $booking->refresh();
+        $this->syncCarLocationOnCompletion($booking);
+
+        return $booking;
+    }
+
+    /**
+     * When a booking is completed, update car branch if pickup != return branch.
+     * Replaces the pickup branch row with return branch in car_branch pivot table.
+     */
+    public function syncCarLocationOnCompletion(Booking $booking): void
+    {
+        $pickupBranchId = (int) $booking->pickup_branch_id;
+        $returnBranchId = (int) $booking->return_branch_id;
+
+        if ($pickupBranchId === $returnBranchId) {
+            return;
+        }
+
+        $car = $booking->car ?? $this->carRepository->findActiveByIdOrFail((int) $booking->car_id);
+        if (!$car) {
+            return;
+        }
+
+        // 1. Update the car's current branch_id to return_branch_id
+        $car->branch_id = $returnBranchId;
+        $car->save();
+
+        // 2. In car_branch pivot table: replace the row that has pickup_branch_id with return_branch_id
+        $returnBranchExists = DB::table('car_branch')
+            ->where('car_id', $car->id)
+            ->where('branch_id', $returnBranchId)
+            ->exists();
+
+        if ($returnBranchExists) {
+            DB::table('car_branch')
+                ->where('car_id', $car->id)
+                ->where('branch_id', $pickupBranchId)
+                ->delete();
+        } else {
+            $pickupBranchExists = DB::table('car_branch')
+                ->where('car_id', $car->id)
+                ->where('branch_id', $pickupBranchId)
+                ->exists();
+
+            if ($pickupBranchExists) {
+                DB::table('car_branch')
+                    ->where('car_id', $car->id)
+                    ->where('branch_id', $pickupBranchId)
+                    ->update([
+                        'branch_id' => $returnBranchId,
+                        'updated_at' => now(),
+                    ]);
+            } else {
+                DB::table('car_branch')->insert([
+                    'car_id' => $car->id,
+                    'branch_id' => $returnBranchId,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Calculate earliest available pickup date & time for a car at a specific branch.
+     *
+     * @return array{pickup_at: string, return_at: string, min_pickup_at: string}
+     */
+    public function getEarliestAvailablePickup(int $carId, int $branchId, ?int $ignoreBookingId = null): array
+    {
+        $timezone = (string) config('app.timezone', 'Asia/Riyadh');
+        $now = Carbon::now($timezone);
+
+        // Find existing future/active bookings for this car
+        $latestBooking = Booking::query()
+            ->where('car_id', $carId)
+            ->whereIn('status', [BookingStatusEnum::PENDING->value, BookingStatusEnum::ACTIVE->value])
+            ->when($ignoreBookingId !== null, fn($q) => $q->where('id', '!=', $ignoreBookingId))
+            ->where('return_at', '>', $now)
+            ->orderByDesc('return_at')
+            ->first();
+
+        $baseTime = $latestBooking && $latestBooking->return_at
+            ? Carbon::parse($latestBooking->return_at, $timezone)
+            : $now->copy();
+
+        if ($baseTime->lessThan($now)) {
+            $baseTime = $now->copy();
+        }
+
+        // Loop up to 14 days to find the earliest slot when the branch is open and within reservation hours
+        $candidateDate = $baseTime->copy();
+        $foundSlot = null;
+
+        for ($day = 0; $day < 14; $day++) {
+            $checkDate = $candidateDate->copy()->addDays($day);
+            $dayOfWeek = DayOfWeekEnum::fromDate($checkDate)->value;
+            $workingHour = $this->branchRepository->getWorkingHour($branchId, $dayOfWeek);
+
+            if (!$workingHour || !$workingHour->is_open) {
+                continue;
+            }
+
+            if ($workingHour->is_24_hours) {
+                if ($day === 0) {
+                    $earliestHour = $baseTime->copy()->addHour()->startOfHour();
+                    $foundSlot = $earliestHour->lessThan($now) ? $now->copy()->addHour()->startOfHour() : $earliestHour;
+                } else {
+                    $foundSlot = $checkDate->copy()->setTime(9, 0, 0);
+                }
+                break;
+            }
+
+            $openStr = $workingHour->reservation_start_at ?? $workingHour->open_at ?? '08:00';
+            $closeStr = $workingHour->reservation_close_at ?? $workingHour->close_at ?? '23:00';
+
+            [$startH, $startM] = array_map('intval', explode(':', substr((string) $openStr, 0, 5)));
+            [$closeH, $closeM] = array_map('intval', explode(':', substr((string) $closeStr, 0, 5)));
+
+            $dayStart = $checkDate->copy()->setTime($startH, $startM, 0);
+            $dayClose = $checkDate->copy()->setTime($closeH, $closeM, 0);
+
+            if ($day === 0) {
+                $targetTime = $baseTime->copy()->addMinutes(30)->ceilHour();
+                if ($targetTime->lessThan($dayStart)) {
+                    $foundSlot = $dayStart;
+                    break;
+                }
+                if ($targetTime->lessThanOrEqualTo($dayClose)) {
+                    $foundSlot = $targetTime;
+                    break;
+                }
+            } else {
+                $foundSlot = $dayStart;
+                break;
+            }
+        }
+
+        if (!$foundSlot) {
+            $foundSlot = $now->copy()->addHour()->startOfHour();
+        }
+
+        $returnSlot = $foundSlot->copy()->addDays(2);
+
+        return [
+            'pickup_at'     => $foundSlot->format('Y-m-d\TH:i'),
+            'return_at'     => $returnSlot->format('Y-m-d\TH:i'),
+            'min_pickup_at' => $now->format('Y-m-d\TH:i'),
+        ];
     }
 
     /**

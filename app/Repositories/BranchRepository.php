@@ -120,4 +120,27 @@ class BranchRepository
             })
             ->exists();
     }
+
+    /**
+     * Get total count of branches.
+     */
+    public function getTotalCount(): int
+    {
+        return $this->branchModel->newQuery()->count();
+    }
+
+    /**
+     * Get branches summary with city and car count.
+     *
+     * @return Collection<int, Branch>
+     */
+    public function getBranchesSummary(int $limit = 6): Collection
+    {
+        return $this->branchModel->newQuery()
+            ->with('city')
+            ->withCount('cars')
+            ->orderByDesc('cars_count')
+            ->take($limit)
+            ->get();
+    }
 }

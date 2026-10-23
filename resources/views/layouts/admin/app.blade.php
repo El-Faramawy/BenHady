@@ -28,16 +28,22 @@
         <div class="app-content">
             <div class="side-app">
                 <!-- PAGE-HEADER -->
+                @hasSection('hide_page_header')
+                @else
                 <div class="page-header">
                     <div>
                         <h1 class="page-title">@yield('page_title')</h1>
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="{{route('admin.home')}}">الرئيسية</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">@yield('page_title')</li>
+                            @if(request()->routeIs('admin.home') || request()->routeIs('/') || trim($__env->yieldContent('page_title')) === 'لوحة التحكم' || trim($__env->yieldContent('page_title')) === 'الرئيسية')
+                                <li class="breadcrumb-item active" aria-current="page"><i class="fe fe-home ml-1"></i>الرئيسية</li>
+                            @else
+                                <li class="breadcrumb-item"><a href="{{route('admin.home')}}"><i class="fe fe-home ml-1"></i>الرئيسية</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">@yield('page_title')</li>
+                            @endif
                         </ol>
                     </div>
-
                 </div>
+                @endif
                 <!-- PAGE-HEADER END -->
                 @yield('content')
 

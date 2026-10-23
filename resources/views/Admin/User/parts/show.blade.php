@@ -156,15 +156,15 @@
         @else
             <div class="table-responsive">
                 <table class="table table-hover table-striped mb-0 text-center align-middle">
-                    <thead class="bg-light">
+                    <thead class="admin-table-header text-white">
                         <tr>
-                            <th class="py-3">رقم الحجز</th>
-                            <th class="py-3">السيارة</th>
-                            <th class="py-3">فرع الاستلام</th>
-                            <th class="py-3">تاريخ الاستلام</th>
-                            <th class="py-3">تاريخ الإرجاع</th>
-                            <th class="py-3">الإجمالي</th>
-                            <th class="py-3">الحالة</th>
+                            <th class="py-3 text-white">رقم الحجز</th>
+                            <th class="py-3 text-white">السيارة</th>
+                            <th class="py-3 text-white">فرع الاستلام</th>
+                            <th class="py-3 text-white">تاريخ الاستلام</th>
+                            <th class="py-3 text-white">تاريخ الإرجاع</th>
+                            <th class="py-3 text-white">الإجمالي</th>
+                            <th class="py-3 text-white">الحالة</th>
                         </tr>
                     </thead>
                     <tbody>

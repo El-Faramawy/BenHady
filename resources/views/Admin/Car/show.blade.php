@@ -5,76 +5,7 @@
 
 @push('admin_css')
     <link href="{{url('Admin')}}/assets/plugins/fileuploads/css/fileupload.css" rel="stylesheet" type="text/css" />
-    <style>
-        #Modal .modal-dialog {
-            max-width: 950px !important;
-        }
-
-        .car-nav-tabs .nav-link {
-            font-weight: 700;
-            padding: 10px 18px;
-            border-radius: 8px !important;
-            color: #475569;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            margin-left: 6px;
-        }
-
-        .car-nav-tabs .nav-link.active {
-            background: #525ce5 !important;
-            color: #ffffff !important;
-            border-color: #525ce5 !important;
-        }
-
-        .car-hero-img {
-            width: 100%;
-            height: 380px;
-            object-fit: cover;
-            border-radius: 14px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            border: 1px solid #e2e8f0;
-        }
-
-        .car-thumb-img {
-            width: 80px;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 8px;
-            cursor: pointer;
-            border: 2px solid #e2e8f0;
-            transition: all 0.2s ease-in-out;
-        }
-
-        .car-thumb-img:hover,
-        .car-thumb-img.active {
-            border-color: #525ce5;
-            transform: scale(1.05);
-            box-shadow: 0 2px 8px rgba(82, 92, 229, 0.3);
-        }
-
-        .spec-card {
-            background: #ffffff;
-            border-radius: 12px;
-            padding: 16px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .spec-icon-box {
-            width: 48px;
-            height: 48px;
-            border-radius: 10px;
-            background: #eef2ff;
-            color: #525ce5;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-        }
-    </style>
+    @include('Admin.Car.parts.show-css')
 @endpush
 
 @section('content')
@@ -300,7 +231,9 @@
                 </div>
                 <div class="card-body p-3">
                     <div class="p-3 bg-light rounded border mb-3">
-                        <span class="badge badge-primary px-2 py-1 mb-1 font-size-11">الفرع المتواجدة به حالياً</span>
+                        <span class="badge px-3 py-1 mb-2 font-size-12 font-weight-bold" style="background: #F5FDEA; color: #2E5A1C; border: 1px solid #D8F2B5; border-radius: 6px;">
+                            <i class="fa fa-map-pin ml-1 text-success"></i>الفرع المتواجدة به حالياً
+                        </span>
                         <h6 class="font-weight-bold text-dark mb-1">{{ $car->branch?->name_ar }}
                             ({{ $car->branch?->city?->name_ar }})</h6>
                         <small class="text-muted d-block mb-2">{{ $car->branch?->address_ar }}</small>
@@ -371,18 +304,18 @@
                 </div>
             @else
                 <div class="table-responsive">
-                    <table class="table table-hover table-bordered mb-0 text-center">
-                        <thead class="bg-light">
+                    <table class="table table-striped table-hover mb-0 text-center align-middle modern-admin-table">
+                        <thead class="admin-table-header text-white">
                             <tr>
-                                <th>رقم الحجز</th>
-                                <th>اسم العميل</th>
-                                <th>هاتف العميل</th>
-                                <th>فرع الاستلام</th>
-                                <th>تاريخ الاستلام</th>
-                                <th>تاريخ الإرجاع</th>
-                                <th>عدد الأيام</th>
-                                <th>الإجمالي</th>
-                                <th>الحالة</th>
+                                <th class="text-white">رقم الحجز</th>
+                                <th class="text-white">اسم العميل</th>
+                                <th class="text-white">هاتف العميل</th>
+                                <th class="text-white">فرع الاستلام</th>
+                                <th class="text-white">تاريخ الاستلام</th>
+                                <th class="text-white">تاريخ الإرجاع</th>
+                                <th class="text-white">عدد الأيام</th>
+                                <th class="text-white">الإجمالي</th>
+                                <th class="text-white">الحالة</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -480,7 +413,7 @@
             id = id || {{ $car->id }};
             $('#form-load').html(loader);
             $('#Modal').modal('show');
-            var url = "{{ route('cars.edit', ':id') }}".replace(':id', id);
+            var url = "{{ route('cars.edit', 999999) }}".replace('999999', id);
             setTimeout(function () {
                 $('#form-load').load(url, function () {
                     if ($.fn.dropify) {
@@ -550,7 +483,7 @@
             });
         });
 
-        $(document).on('click', '#close_model, [data-dismiss="modal"]', function (e) {
+        $(document).on('click', '#close_model, #close_model_x, .btn-close-modal, [data-dismiss="modal"]', function (e) {
             $('#Modal').modal('hide');
         });
     </script>

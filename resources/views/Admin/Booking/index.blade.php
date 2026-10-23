@@ -5,46 +5,6 @@
 
 @push('admin_css')
     <link href="{{url('Admin')}}/assets/plugins/select2/select2.min.css" rel="stylesheet" />
-    <style>
-        #Modal .modal-dialog {
-            max-width: 900px !important;
-        }
-        .booking-filter-tabs .nav-link {
-            font-weight: 700;
-            padding: 10px 20px;
-            border-radius: 8px !important;
-            color: #475569;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            margin-left: 8px;
-            transition: all 0.2s ease-in-out;
-        }
-        .booking-filter-tabs .nav-link:hover {
-            background: #e2e8f0;
-        }
-        .booking-filter-tabs .nav-link.active {
-            background: #525ce5 !important;
-            color: #ffffff !important;
-            border-color: #525ce5 !important;
-            box-shadow: 0 4px 10px rgba(82, 92, 229, 0.3);
-        }
-        .select2-container {
-            width: 100% !important;
-        }
-        .select2-container--default .select2-selection--single {
-            height: 44px !important;
-            border: 1px solid #e2e8f0 !important;
-            border-radius: 6px !important;
-            padding: 8px 12px !important;
-        }
-        .select2-container--default .select2-selection--single .select2-selection__rendered {
-            line-height: 26px !important;
-            font-size: 14px;
-        }
-        .select2-container--default .select2-selection--single .select2-selection__arrow {
-            height: 42px !important;
-        }
-    </style>
 @endpush
 
 @section('content')

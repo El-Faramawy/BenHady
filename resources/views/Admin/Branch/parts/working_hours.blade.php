@@ -2,18 +2,6 @@
     @csrf
     @method('PUT')
 
-    <style>
-        .day-status-pill {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 5px 14px;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            min-width: 155px;
-        }
-    </style>
 
     <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
         <div>
@@ -24,16 +12,16 @@
     </div>
 
     <div class="table-responsive">
-        <table class="table table-bordered table-striped text-center align-middle mb-0" id="hoursTable">
-            <thead class="bg-primary text-white">
+        <table class="table table-bordered table-striped text-center align-middle mb-0 modern-admin-table" id="hoursTable">
+            <thead class="admin-table-header text-white">
                 <tr>
-                    <th style="width: 130px; min-width: 120px;">اليوم</th>
-                    <th style="width: 190px; min-width: 180px;">تفعيل اليوم</th>
-                    <th style="width: 130px; min-width: 120px;">24 ساعة</th>
-                    <th>وقت الفتح</th>
-                    <th>وقت الإغلاق</th>
-                    <th>بداية الحجز</th>
-                    <th>نهاية الحجز</th>
+                    <th class="text-white" style="width: 130px; min-width: 120px;">اليوم</th>
+                    <th class="text-white" style="width: 190px; min-width: 180px;">تفعيل اليوم</th>
+                    <th class="text-white" style="width: 130px; min-width: 120px;">24 ساعة</th>
+                    <th class="text-white">وقت الفتح</th>
+                    <th class="text-white">وقت الإغلاق</th>
+                    <th class="text-white">بداية الحجز</th>
+                    <th class="text-white">نهاية الحجز</th>
                 </tr>
             </thead>
             <tbody>

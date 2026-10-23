@@ -5,36 +5,7 @@
 
 @push('admin_css')
     <link href="{{url('Admin')}}/assets/plugins/select2/select2.min.css" rel="stylesheet" />
-    <style>
-        #Modal .modal-dialog {
-            max-width: 900px !important;
-        }
-        .detail-card {
-            background: #ffffff;
-            border-radius: 14px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-            height: 100%;
-        }
-        .detail-icon-box {
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-        }
-        .select2-container {
-            width: 100% !important;
-        }
-        .select2-container--default .select2-selection--single {
-            height: 44px !important;
-            border: 1px solid #e2e8f0 !important;
-            border-radius: 6px !important;
-            padding: 8px 12px !important;
-        }
-    </style>
+    @include('Admin.Booking.parts.show-css')
 @endpush
 
 @section('content')
@@ -77,10 +48,6 @@
 
                     <button type="button" id="editBtn" class="btn btn-primary px-3 py-2 font-weight-bold shadow-sm" data-id="{{ $booking->id }}" style="border-radius: 8px;">
                         <i class="fa fa-edit ml-1"></i>تعديل الحجز
-                    </button>
-
-                    <button type="button" class="btn btn-danger px-3 py-2 font-weight-bold shadow-sm delete" data-id="{{ $booking->id }}" style="border-radius: 8px;">
-                        <i class="fa fa-trash ml-1"></i>حذف
                     </button>
 
                     <a href="{{ route('bookings.index') }}" class="btn btn-outline-secondary px-3 py-2 font-weight-bold" style="border-radius: 8px;">
@@ -162,7 +129,7 @@
                         <i class="fa fa-car ml-2"></i>بيانات السيارة المستأجرة
                     </h6>
                     @if($booking->car)
-                        <a href="{{ route('cars.show', $booking->car_id) }}" class="btn btn-outline-primary btn-sm px-2 py-1 font-size-11">
+                        <a href="{{ route('cars.show', $booking->car_id) }}" class="btn btn-sm px-3 py-1 font-size-12 font-weight-bold" style="background: #F5FDEA; color: #2E5A1C; border: 1px solid #D8F2B5; border-radius: 6px;">
                             عرض صفحة السيارة <i class="fa fa-external-link mr-1"></i>
                         </a>
                     @endif
@@ -356,13 +323,12 @@
             }
         }
 
-        // Edit button triggers the edit modal
-        $(document).off('click', '#editBtn').on('click', '#editBtn', function (e) {
-            e.preventDefault();
-            var id = $(this).data('id');
+        // Global function to open edit modal
+        window.openEditBookingModal = function (id) {
+            id = id || {{ $booking->id }};
             $('#form-load').html(loader);
             $('#Modal').modal('show');
-            var url = "{{ route('bookings.edit', ':id') }}".replace(':id', id);
+            var url = "{{ route('bookings.edit', 999999) }}".replace('999999', id);
             setTimeout(function () {
                 $('#form-load').load(url, function () {
                     if ($.fn.select2) {
@@ -374,6 +340,13 @@
                     }
                 });
             }, 100);
+        };
+
+        // Edit button triggers the edit modal
+        $(document).off('click', '#editBtn').on('click', '#editBtn', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id') || {{ $booking->id }};
+            window.openEditBookingModal(id);
         });
 
         // Form submit handler for editing booking inside modal
@@ -406,7 +379,9 @@
                     $btn.prop('disabled', false);
                     $form.data('is_submitting', false);
                     $('#Modal').modal('hide');
-                    my_toaster(data.message || 'تم التعديل بنجاح');
+                    if (typeof my_toaster === 'function') {
+                        my_toaster(data.message || 'تم التعديل بنجاح');
+                    }
                     setTimeout(function () {
                         location.reload();
                     }, 500);
@@ -420,55 +395,7 @@
             });
         });
 
-        // Delete booking handler
-        $(document).off('click', '.delete').on('click', '.delete', function (e) {
-            e.preventDefault();
-            var id = $(this).data('id');
-            var swalAlert = window.Swal || window.swal;
-
-            function runBookingDelete() {
-                var url = "{{ route('bookings.destroy', ':id') }}".replace(':id', id);
-                $.ajax({
-                    url: url,
-                    type: 'DELETE',
-                    data: { _token: "{{ csrf_token() }}" },
-                    beforeSend: function () { $('#global-loader').show(); },
-                    success: function (data) {
-                        $('#global-loader').hide();
-                        my_toaster(data.message || 'تم الحذف بنجاح');
-                        setTimeout(function () {
-                            location.href = "{{ route('bookings.index') }}";
-                        }, 500);
-                    },
-                    error: function (data) {
-                        $('#global-loader').hide();
-                        handleAjaxError(data);
-                    }
-                });
-            }
-
-            if (swalAlert) {
-                swalAlert.fire({
-                    title: "هل أنت متأكد من حذف هذا الحجز؟",
-                    text: "لا يمكنك التراجع بعد إتمام عملية الحذف!",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#DD6B55",
-                    confirmButtonText: "موافق",
-                    cancelButtonText: "إلغاء",
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        runBookingDelete();
-                    }
-                });
-            } else {
-                if (confirm('هل أنت متأكد من حذف هذا الحجز؟')) {
-                    runBookingDelete();
-                }
-            }
-        });
-
-        $(document).on('click', '#close_model, [data-dismiss="modal"]', function (e) {
+        $(document).on('click', '#close_model, #close_model_x, .btn-close-modal, [data-dismiss="modal"]', function (e) {
             $('#Modal').modal('hide');
         });
     </script>

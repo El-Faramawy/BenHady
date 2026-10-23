@@ -74,6 +74,7 @@ Route::prefix('admin')->middleware('web')->namespace('App\Http\Controllers\Admin
         Route::post('multi_delete_cars', 'CarController@multiDelete')->name('cars.multiDelete');
 
         ################################### Bookings ##########################################
+        Route::get('bookings/car_availability', 'BookingController@getCarAvailability')->name('bookings.car_availability');
         Route::get('bookings/invoice/{id}', 'BookingController@invoice')->name('bookings.invoice');
         Route::resource('bookings', 'BookingController');
         Route::post('multi_delete_bookings', 'BookingController@multiDelete')->name('bookings.multiDelete');
@@ -98,8 +99,11 @@ Route::prefix('admin')->middleware('web')->namespace('App\Http\Controllers\Admin
     });
     Route::get('/migrate', function () {
         Artisan::call('migrate ');
-//        Artisan::call('db:seed');
         return '<h1> migrated</h1>';
+    });
+    Route::get('/seed', function () {
+        Artisan::call('db:seed');
+        return '<h1> seeded</h1>';
     });
     Route::fallback(function () {
         return redirect('admin/home');

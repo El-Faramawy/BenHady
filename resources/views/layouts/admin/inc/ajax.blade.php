@@ -1,18 +1,125 @@
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js?{{time()}}"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js?{{time()}}"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.12.1/b-2.2.3/b-colvis-2.2.3/b-html5-2.2.3/b-print-2.2.3/datatables.min.js?{{time()}}"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.6/js/standalone/selectize.min.js"></script>
-<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-
 <script>
-    var loader = ` <div class="linear-background">
-                            <div class="inter-crop"></div>
-                            <div class="inter-right--top"></div>
-                            <div class="inter-right--bottom"></div>
-                        </div>
-        `;
+    var loader = `
+        <div class="text-center py-5 my-4">
+            <div class="spinner-border text-success" role="status" style="width: 2.75rem; height: 2.75rem;">
+                <span class="sr-only">جاري التحميل...</span>
+            </div>
+            <div class="mt-3 text-muted font-size-13 font-weight-600">جاري تحميل البيانات...</div>
+        </div>
+    `;
+
+    var createFormCache = null;
+    var isPreloadingCreate = false;
+
+    function preloadCreateForm() {
+        if (isPreloadingCreate) return;
+        isPreloadingCreate = true;
+        $.ajax({
+            url: "{{ route("$url.create") }}",
+            type: 'GET',
+            success: function (html) {
+                createFormCache = html;
+                isPreloadingCreate = false;
+            },
+            error: function () {
+                isPreloadingCreate = false;
+            }
+        });
+    }
+
+    function initModalPlugins() {
+        if ($.fn.select2) {
+            $('#Modal .select2-user').each(function () {
+                if (!$(this).data('select2')) {
+                    $(this).select2({
+                        dropdownParent: $('#Modal'),
+                        placeholder: 'ابحث باسم أو هاتف العميل...',
+                        allowClear: true,
+                        width: '100%',
+                        dir: 'rtl'
+                    });
+                }
+            });
+            $('#Modal .select2-basic, #Modal .select2').each(function () {
+                if (!$(this).data('select2')) {
+                    $(this).select2({
+                        dropdownParent: $('#Modal'),
+                        width: '100%',
+                        dir: 'rtl'
+                    });
+                }
+            });
+        }
+        if ($.fn.tooltip) {
+            $('#Modal [data-toggle="tooltip"]').tooltip();
+        }
+        if (typeof window.onModalLoaded === 'function') {
+            window.onModalLoaded();
+        }
+    }
+
     $(function () {
+        preloadCreateForm();
+        var cleanCellText = function (data) {
+            if (typeof data === 'string') {
+                return $('<div>').html(data).text().replace(/\s+/g, ' ').trim();
+            }
+            return data;
+        if ($.fn.dataTable && $.fn.dataTable.ext && $.fn.dataTable.ext.buttons && $.fn.dataTable.ext.buttons.collection) {
+            if (!$.fn.dataTable.ext.buttons.collection._rtlPositionPatched) {
+                $.fn.dataTable.ext.buttons.collection._rtlPositionPatched = true;
+                var origCollectionAction = $.fn.dataTable.ext.buttons.collection.action;
+                $.fn.dataTable.ext.buttons.collection.action = function (e, dt, button, config) {
+                    origCollectionAction.call(this, e, dt, button, config);
+
+                    var reposition = function () {
+                        if (!config._collection || !config._collection.length) return;
+                        var $btn = $(button);
+                        if (!$btn.length) return;
+
+                        var btnOffset = $btn.offset();
+                        var btnWidth = $btn.outerWidth();
+                        var btnHeight = $btn.outerHeight();
+                        var colWidth = config._collection.outerWidth() || 240;
+                        var winWidth = $(window).width();
+
+                        // In RTL, align right edge of collection with right edge of button:
+                        var targetLeft = (btnOffset.left + btnWidth) - colWidth;
+
+                        // Restrict from overlapping right sidebar:
+                        var $sidebar = $('.app-sidebar:visible');
+                        var rightLimit = winWidth;
+                        if ($sidebar.length) {
+                            var sOffset = $sidebar.offset();
+                            if (sOffset.left > 100 && sOffset.left < winWidth) {
+                                rightLimit = sOffset.left;
+                            }
+                        }
+
+                        if (targetLeft + colWidth > rightLimit - 15) {
+                            targetLeft = rightLimit - 15 - colWidth;
+                        }
+                        if (targetLeft < 15) {
+                            targetLeft = 15;
+                        }
+
+                        config._collection.css({
+                            'position': 'absolute',
+                            'top': Math.round(btnOffset.top + btnHeight + 4) + 'px',
+                            'left': Math.round(targetLeft) + 'px',
+                            'right': 'auto',
+                            'z-index': '99999'
+                        });
+                    };
+
+                    reposition();
+                    setTimeout(reposition, 10);
+                    setTimeout(reposition, 60);
+                    setTimeout(reposition, 150);
+                };
+            }
+        }
+
         var table = $("#exportexample").DataTable({
             bLengthChange: true,
             serverSide: true,
@@ -23,8 +130,8 @@
             // ],
             "language": {
                 paginate: {
-                    previous: "<i class='simple-icon-arrow-left'></i>",
-                    next: "<i class='simple-icon-arrow-right'></i>"
+                    previous: "<i class='fa fa-angle-right ml-1'></i> السابق",
+                    next: "التالي <i class='fa fa-angle-left mr-1'></i>"
                 },
                 "sProcessing": "جاري التحميل ..",
                 "sLengthMenu": "اظهار _MENU_ سجل",
@@ -34,17 +141,81 @@
                 "sInfoFiltered": "للبحث",
                 "sSearch": "بحث :    ",
                 "oPaginate": {
-                    "sPrevious": "السابق",
-                    "sNext": "التالي",
+                    "sPrevious": "<i class='fa fa-angle-right ml-1'></i> السابق",
+                    "sNext": "التالي <i class='fa fa-angle-left mr-1'></i>"
+                },
+                "buttons": {
+                    "colvis": "تحديد الأعمدة",
+                    "colvisRestore": "إعادة التعيين",
+                    "copy": "نسخ",
+                    "excel": "Excel",
+                    "csv": "CSV",
+                    "print": "طباعة"
                 }
             },
             dom: 'lBfrtip',
             buttons: [
-                'colvis',
-                'excel',
-                'print',
-                'copy',
-                'csv',
+                {
+                    extend: 'colvis',
+                    text: '<i class="fe fe-columns ml-1"></i>الأعمدة',
+                    className: 'btn btn-outline-success',
+                    columns: ':not(.no-colvis):not(:first-child):not(:last-child)'
+                },
+                {
+                    extend: 'excelHtml5',
+                    text: '<i class="fa fa-file-excel-o ml-1"></i>Excel',
+                    className: 'btn btn-outline-success',
+                    title: document.title,
+                    exportOptions: {
+                        columns: ':visible:not(.no-export):not(:first-child):not(:last-child)',
+                        format: {
+                            header: cleanCellText,
+                            body: cleanCellText
+                        }
+                    }
+                },
+                {
+                    extend: 'csvHtml5',
+                    text: '<i class="fa fa-file-text-o ml-1"></i>CSV',
+                    className: 'btn btn-outline-success',
+                    bom: true,
+                    charset: 'utf-8',
+                    exportOptions: {
+                        columns: ':visible:not(.no-export):not(:first-child):not(:last-child)',
+                        format: {
+                            header: cleanCellText,
+                            body: cleanCellText
+                        }
+                    }
+                },
+                {
+                    extend: 'copyHtml5',
+                    text: '<i class="fa fa-copy ml-1"></i>نسخ',
+                    className: 'btn btn-outline-success',
+                    exportOptions: {
+                        columns: ':visible:not(.no-export):not(:first-child):not(:last-child)',
+                        format: {
+                            header: cleanCellText,
+                            body: cleanCellText
+                        }
+                    }
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="fa fa-print ml-1"></i>طباعة',
+                    className: 'btn btn-outline-success',
+                    exportOptions: {
+                        columns: ':visible:not(.no-export):not(:first-child):not(:last-child)'
+                    },
+                    customize: function ( win ) {
+                        $(win.document.body).css( 'direction', 'rtl' );
+                        $(win.document.body).css( 'font-family', 'Cairo, sans-serif' );
+                        $(win.document.body).find( 'table' )
+                            .addClass( 'compact' )
+                            .css( 'font-size', 'inherit' )
+                            .css( 'direction', 'rtl' );
+                    }
+                }
             ],
             searching: true,
             ordering:false,
@@ -58,6 +229,78 @@
 
         table.buttons().container().appendTo( '#exportexample_wrapper .col-md-6:eq(0)' );
 
+        // Dynamic positioning for ColVis and button collections in RTL layout
+        function adjustCollectionPosition() {
+            var $col = $('div.dt-button-collection:visible');
+            if (!$col.length) return;
+
+            var $btn = $('.buttons-collection.active, .buttons-colvis.active, .buttons-collection:focus, .buttons-colvis:focus');
+            if (!$btn.length) {
+                $btn = $('.buttons-colvis, .buttons-collection').last();
+            }
+
+            if ($btn.length && $btn.is(':visible')) {
+                var btnOffset = $btn.offset();
+                var btnWidth = $btn.outerWidth();
+                var btnHeight = $btn.outerHeight();
+                var colWidth = $col.outerWidth() || 240;
+                var winWidth = $(window).width();
+
+                // In RTL, align right edge of collection with right edge of button:
+                var targetLeft = (btnOffset.left + btnWidth) - colWidth;
+
+                // Restrict dropdown from overflowing into the right sidebar
+                var $sidebar = $('.app-sidebar:visible');
+                var rightLimit = winWidth;
+                if ($sidebar.length) {
+                    var sOffset = $sidebar.offset();
+                    if (sOffset.left > 100 && sOffset.left < winWidth) {
+                        rightLimit = sOffset.left;
+                    }
+                }
+
+                if (targetLeft + colWidth > rightLimit - 10) {
+                    targetLeft = rightLimit - 10 - colWidth;
+                }
+                if (targetLeft < 15) {
+                    targetLeft = 15;
+                }
+
+                $col.css({
+                    'left': Math.round(targetLeft) + 'px',
+                    'top': Math.round(btnOffset.top + btnHeight + 4) + 'px',
+                    'right': 'auto',
+                    'position': 'absolute',
+                    'z-index': '99999'
+                });
+            }
+        }
+
+        $(document).on('click', '.buttons-colvis, .buttons-collection', function() {
+            setTimeout(adjustCollectionPosition, 10);
+            setTimeout(adjustCollectionPosition, 50);
+        });
+
+        if (window.MutationObserver) {
+            var dtObserver = new MutationObserver(function(mutations) {
+                for (var i = 0; i < mutations.length; i++) {
+                    if (mutations[i].addedNodes.length) {
+                        var $col = $('div.dt-button-collection:visible');
+                        if ($col.length) {
+                            adjustCollectionPosition();
+                            break;
+                        }
+                    }
+                }
+            });
+            dtObserver.observe(document.body, { childList: true, subtree: false });
+        }
+
+        $(window).on('resize scroll', function() {
+            if ($('div.dt-button-collection:visible').length) {
+                adjustCollectionPosition();
+            }
+        });
     });
 
     $('#exportexample').on('draw.dt', function() {
@@ -94,12 +337,17 @@
     }
 
     $(document).off('click', '#addBtn').on('click', '#addBtn', function () {
-        $('#form-load').html(loader);
         $('#Modal').modal('show');
-
-        setTimeout(function (){
-            $('#form-load').load("{{route("$url.create")}}");
-        }, 100);
+        if (createFormCache) {
+            $('#form-load').html(createFormCache);
+            initModalPlugins();
+        } else {
+            $('#form-load').html(loader);
+            $('#form-load').load("{{route("$url.create")}}", function (response) {
+                createFormCache = response;
+                initModalPlugins();
+            });
+        }
     });
 
     $(document).off('submit', 'form#form').on('submit', 'form#form', function (e) {
@@ -132,6 +380,8 @@
                     $form.data('is_submitting', false);
                     $('#Modal').modal('hide');
                     my_toaster(data.message);
+                    createFormCache = null;
+                    preloadCreateForm();
                     $('#exportexample').DataTable().ajax.reload(null, false);
                 }, 100);
             },
@@ -248,12 +498,10 @@
         $('#form-load').html(loader);
         $('#Modal').modal('show');
 
-        var url = "{{route("$url.edit",':id')}}";
-        url = url.replace(':id', id);
-
-        setTimeout(function (){
-            $('#form-load').load(url);
-        }, 100);
+        var url = "{{route("$url.edit",':id')}}".replace(':id', id);
+        $('#form-load').load(url, function () {
+            initModalPlugins();
+        });
     });
 
     $(document).on('change', 'input[type="file"]', function () {

@@ -6,6 +6,7 @@ namespace App\Repositories;
 
 use App\Exceptions\User\UserNotFoundException;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 
 /**
  * Handles all database interactions for the User model.
@@ -90,5 +91,31 @@ class UserRepository
     public function getUserWithBookings(User $user): User
     {
         return $user->load(['bookings.car.brand', 'bookings.pickupBranch', 'bookings.returnBranch', 'coupons']);
+    }
+
+    /**
+     * Get total count of users.
+     */
+    public function getTotalCount(): int
+    {
+        return $this->model->newQuery()->count();
+    }
+
+    /**
+     * Get count of active/verified users.
+     */
+    public function getActiveCount(): int
+    {
+        return $this->model->newQuery()->where('status', 'active')->count();
+    }
+
+    /**
+     * Get recent registered users.
+     *
+     * @return Collection<int, User>
+     */
+    public function getRecentUsers(int $limit = 5): Collection
+    {
+        return $this->model->newQuery()->latest('id')->take($limit)->get();
     }
 }
