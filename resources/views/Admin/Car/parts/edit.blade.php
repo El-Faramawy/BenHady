@@ -297,16 +297,16 @@
             url: url,
             type: 'POST',
             data: { _token: "{{ csrf_token() }}" },
-            beforeSend: function () { $('#global-loader').show(); },
+            beforeSend: function () { $('#global-loader').addClass('active'); },
             success: function (data) {
-                $('#global-loader').hide();
+                $('#global-loader').removeClass('active');
                 my_toaster(data.message || 'تم التعيين كرئيسية بنجاح');
                 // Reload edit view to reflect new primary image
                 $('#form-load').load("{{ route('cars.edit', $car->id) }}");
                 $('#exportexample').DataTable().ajax.reload(null, false);
             },
             error: function (data) {
-                $('#global-loader').hide();
+                $('#global-loader').removeClass('active');
                 handleAjaxError(data);
             }
         });

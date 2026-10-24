@@ -77,21 +77,6 @@
             var newUrl = window.location.pathname + '?status_filter=' + currentStatusFilter;
             $('#exportexample').DataTable().ajax.url(newUrl).load();
         });
-
-        // Initialize Select2 when create/edit form loads inside #Modal
-        $(document).ajaxComplete(function(event, xhr, settings) {
-            if (settings.url && (settings.url.indexOf('/bookings/create') !== -1 || settings.url.indexOf('/edit') !== -1)) {
-                if ($.fn.select2) {
-                    $('.select2-user').select2({
-                        dropdownParent: $('#Modal'),
-                        placeholder: 'ابحث باسم أو هاتف العميل...',
-                        allowClear: true,
-                        width: '100%',
-                        dir: 'rtl'
-                    });
-                }
-            }
-        });
     </script>
     @include('layouts.admin.inc.ajax', ['url' => 'bookings'])
 @endpush

@@ -1,10 +1,13 @@
 <script>
     var loader = `
-        <div class="text-center py-5 my-4">
-            <div class="spinner-border text-success" role="status" style="width: 2.75rem; height: 2.75rem;">
-                <span class="sr-only">جاري التحميل...</span>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:35px 20px;gap:12px;">
+            <img src="{{url('Admin')}}/imgs/car-loader.gif" alt="جاري التحميل" style="width:120px;height:auto;display:block;object-fit:contain;">
+            <p style="font-family:'Cairo',sans-serif;font-size:14px;font-weight:700;color:#1E3A1A;margin:0;">جاري تحميل البيانات...</p>
+            <div style="display:flex;gap:5px;">
+                <span style="width:7px;height:7px;border-radius:50%;background:#76C419;animation:gl-bounce 1.2s ease-in-out infinite;"></span>
+                <span style="width:7px;height:7px;border-radius:50%;background:#76C419;animation:gl-bounce 1.2s ease-in-out infinite 0.2s;"></span>
+                <span style="width:7px;height:7px;border-radius:50%;background:#76C419;animation:gl-bounce 1.2s ease-in-out infinite 0.4s;"></span>
             </div>
-            <div class="mt-3 text-muted font-size-13 font-weight-600">جاري تحميل البيانات...</div>
         </div>
     `;
 
@@ -29,25 +32,30 @@
 
     function initModalPlugins() {
         if ($.fn.select2) {
-            $('#Modal .select2-user').each(function () {
-                if (!$(this).data('select2')) {
-                    $(this).select2({
-                        dropdownParent: $('#Modal'),
-                        placeholder: 'ابحث باسم أو هاتف العميل...',
-                        allowClear: true,
-                        width: '100%',
-                        dir: 'rtl'
-                    });
+            $('#Modal select.select2-user').each(function () {
+                var $select = $(this);
+                if ($select.hasClass('select2-hidden-accessible')) {
+                    $select.select2('destroy');
                 }
+                $select.select2({
+                    dropdownParent: $('#Modal'),
+                    placeholder: $select.data('placeholder') || 'ابحث باسم أو هاتف العميل...',
+                    allowClear: true,
+                    width: '100%',
+                    dir: 'rtl'
+                });
             });
-            $('#Modal .select2-basic, #Modal .select2').each(function () {
-                if (!$(this).data('select2')) {
-                    $(this).select2({
-                        dropdownParent: $('#Modal'),
-                        width: '100%',
-                        dir: 'rtl'
-                    });
+
+            $('#Modal select.select2-basic, #Modal select.select2').not('.select2-user').each(function () {
+                var $select = $(this);
+                if ($select.hasClass('select2-hidden-accessible')) {
+                    $select.select2('destroy');
                 }
+                $select.select2({
+                    dropdownParent: $('#Modal'),
+                    width: '100%',
+                    dir: 'rtl'
+                });
             });
         }
         if ($.fn.tooltip) {
@@ -58,6 +66,16 @@
         }
     }
 
+    // Prevent Bootstrap modal focus trap from blocking Select2 search field typing
+    if ($.fn.modal && $.fn.modal.Constructor) {
+        $.fn.modal.Constructor.prototype._enforceFocus = function () {};
+        $.fn.modal.Constructor.prototype.enforceFocus = function () {};
+    }
+
+    $(document).on('shown.bs.modal', '#Modal', function () {
+        initModalPlugins();
+    });
+
     $(function () {
         preloadCreateForm();
         var cleanCellText = function (data) {
@@ -65,6 +83,8 @@
                 return $('<div>').html(data).text().replace(/\s+/g, ' ').trim();
             }
             return data;
+        };
+
         if ($.fn.dataTable && $.fn.dataTable.ext && $.fn.dataTable.ext.buttons && $.fn.dataTable.ext.buttons.collection) {
             if (!$.fn.dataTable.ext.buttons.collection._rtlPositionPatched) {
                 $.fn.dataTable.ext.buttons.collection._rtlPositionPatched = true;
@@ -368,14 +388,14 @@
             type: 'POST',
             data: formData,
             beforeSend: function () {
-                $('#global-loader').show();
+                $('#global-loader').addClass('active');
                 $btn.prop('disabled', true);
             },
             complete: function () {
             },
             success: function (data) {
                 window.setTimeout(function () {
-                    $('#global-loader').hide();
+                    $('#global-loader').removeClass('active');
                     $btn.prop('disabled', false);
                     $form.data('is_submitting', false);
                     $('#Modal').modal('hide');
@@ -386,7 +406,7 @@
                 }, 100);
             },
             error: function (data) {
-                $('#global-loader').hide();
+                $('#global-loader').removeClass('active');
                 $btn.prop('disabled', false);
                 $form.data('is_submitting', false);
                 $('#form-load > .linear-background').hide(loader);
@@ -424,16 +444,16 @@
                 url: url,
                 type: 'DELETE',
                 beforeSend: function(){
-                    $('#global-loader').show()
+                    $('#global-loader').addClass('active')
                 },
                 success: function (data) {
                     window.setTimeout(function() {
-                        $('#global-loader').hide()
+                        $('#global-loader').removeClass('active')
                         my_toaster(data.message , 'info')
                         $('#exportexample').DataTable().ajax.reload(null, false);
                     }, 500);
                 }, error: function (data) {
-                    $('#global-loader').hide()
+                    $('#global-loader').removeClass('active')
                     handleAjaxError(data);
                 }
             });
@@ -473,17 +493,17 @@
                     type: 'POST',
                     data: {'ids': ids},
                     beforeSend: function () {
-                        $('#global-loader').show()
+                        $('#global-loader').addClass('active')
                     },
                     success: function (data) {
 
                         window.setTimeout(function () {
-                            $('#global-loader').hide()
+                            $('#global-loader').removeClass('active')
                             my_toaster(data.message, 'info')
                             $('#exportexample').DataTable().ajax.reload(null, false);
                         }, 100);
                     }, error: function (data) {
-                        $('#global-loader').hide()
+                        $('#global-loader').removeClass('active')
                         handleAjaxError(data);
                     }
 

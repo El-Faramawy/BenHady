@@ -12,9 +12,19 @@
 
 <!-- GLOBAL-LOADER -->
 <div id="global-loader">
-    <img src="{{url('Admin')}}/assets/images/loader.svg" class="loader-img" alt="Loader">
+    <div class="gl-box">
+        <img src="{{url('Admin')}}/imgs/car-loader.gif" alt="جاري التحميل" class="gl-car-img">
+        <div class="gl-dots">
+            <div class="gl-dot"></div>
+            <div class="gl-dot"></div>
+            <div class="gl-dot"></div>
+        </div>
+        <p class="gl-text">جاري التحميل...</p>
+        <p class="gl-sub">يرجى الانتظار</p>
+    </div>
 </div>
 <!-- /GLOBAL-LOADER -->
+
 
 <!-- PAGE -->
 <div class="page">

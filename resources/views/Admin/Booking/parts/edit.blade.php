@@ -12,8 +12,8 @@
 
         <!-- User selection via Select2 -->
         <x-form.input class="col-sm-12" title="العميل / المستخدم" :required="true">
-            <select name="user_id" class="form-control select2-user" required>
-                <option value="">-- ابحث باسم أو هاتف العميل --</option>
+            <select name="user_id" class="form-control select2-user" data-placeholder="ابحث باسم أو هاتف العميل..." required>
+                <option value=""></option>
                 @foreach($users as $user)
                     <option value="{{ $user->id }}" {{ $booking->user_id == $user->id ? 'selected' : '' }}>
                         {{ $user->name }} ({{ $user->phone }})

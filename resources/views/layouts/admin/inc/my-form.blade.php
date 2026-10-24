@@ -21,12 +21,12 @@
             contentType: false,
             processData: false,
             beforeSend: function () {
-                $('#global-loader').show();
+                $('#global-loader').addClass('active');
                 $btn.prop('disabled', true);
             },
             success: function (data) {
                 window.setTimeout(function () {
-                    $('#global-loader').hide();
+                    $('#global-loader').removeClass('active');
                     $btn.prop('disabled', false);
                     $form.data('is_submitting', false);
 
@@ -46,7 +46,7 @@
                 }, 300);
             },
             error: function (data) {
-                $('#global-loader').hide();
+                $('#global-loader').removeClass('active');
                 $btn.prop('disabled', false);
                 $form.data('is_submitting', false);
 

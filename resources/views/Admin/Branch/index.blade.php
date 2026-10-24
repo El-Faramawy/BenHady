@@ -77,18 +77,18 @@
                 processData: false,
                 contentType: false,
                 beforeSend: function () {
-                    $('#global-loader').show();
+                    $('#global-loader').addClass('active');
                     $btn.prop('disabled', true);
                 },
                 success: function (data) {
-                    $('#global-loader').hide();
+                    $('#global-loader').removeClass('active');
                     $btn.prop('disabled', false);
                     $form.data('is_submitting', false);
                     $('#workingHoursModal').modal('hide');
                     my_toaster(data.message || 'تم التعديل بنجاح');
                 },
                 error: function (data) {
-                    $('#global-loader').hide();
+                    $('#global-loader').removeClass('active');
                     $btn.prop('disabled', false);
                     $form.data('is_submitting', false);
                     handleAjaxError(data);

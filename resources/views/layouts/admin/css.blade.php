@@ -42,6 +42,9 @@
 <!-- TOASTIFY CSS -->
 <link rel="stylesheet" type="text/css" href="{{url('Admin')}}/assets/plugins/toastify/toastify.min.css">
 
+<!-- SELECT2 CSS -->
+<link href="{{url('Admin')}}/assets/plugins/select2/select2.min.css" rel="stylesheet" />
+
 <!-- INTERNAL DATA TABLE CSS -->
 <link href="{{url('Admin')}}/assets/plugins/datatable/dataTables.bootstrap4.min.css" rel="stylesheet" />
 <link href="{{url('Admin')}}/assets/plugins/datatable/responsivebootstrap4.min.css" rel="stylesheet" />
@@ -709,6 +712,38 @@
         border-color: #76C419 !important;
     }
 
+    /* Completely hide original native select when Select2 is applied */
+    select.select2-hidden-accessible,
+    select.form-control.select2-hidden-accessible {
+        display: none !important;
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        border: 0 !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+
+    /* Select2 Dropdown in Modals */
+    .select2-dropdown {
+        z-index: 1060 !important;
+        border: 1px solid #d1e8b0 !important;
+        border-radius: 8px !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .select2-search--dropdown .select2-search__field {
+        font-family: 'Cairo', sans-serif !important;
+        border: 1px solid #76C419 !important;
+        border-radius: 6px !important;
+        padding: 8px 12px !important;
+        outline: none !important;
+    }
+
     /* Modal Dialog Standard Sizes */
     #Modal .modal-dialog {
         max-width: 900px !important;
@@ -1271,36 +1306,90 @@
     /* ==========================================================================
        Global Loader & Skeleton Shimmer Loaders
        ========================================================================== */
+
+    /* ── Arabic Car Loader ── */
     #global-loader {
+        display: none;
         position: fixed;
         z-index: 50000 !important;
-        background: rgba(255, 255, 255, 0.9) !important;
-        left: 0;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        height: 100%;
-        width: 100%;
-        margin: 0 auto;
-        text-align: center;
+        inset: 0;
+        background: rgba(10, 30, 8, 0.55) !important;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 0;
+    }
+    #global-loader.active {
+        display: flex !important;
     }
 
-    #global-loader .loader-img {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        right: auto;
-        bottom: auto;
-        margin: 0 auto;
-        text-align: center;
-        width: 75px;
-        height: 75px;
-        background: transparent !important;
-        box-shadow: none !important;
-        border: none !important;
-        padding: 0 !important;
+    /* Loader box */
+    .gl-box {
+        background: rgba(255,255,255,0.97);
+        border-radius: 20px;
+        padding: 36px 48px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 0 1px rgba(118,196,25,0.2);
+        animation: gl-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
+    @keyframes gl-pop {
+        from { transform: scale(0.85); opacity: 0; }
+        to   { transform: scale(1);    opacity: 1; }
+    }
+
+    /* Car Loader Image */
+    .gl-car-img {
+        width: 130px;
+        height: auto;
+        display: block;
+        object-fit: contain;
+    }
+
+    /* Dots pulse row */
+    .gl-dots {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+    }
+    .gl-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #76C419;
+        animation: gl-bounce 1.2s ease-in-out infinite;
+    }
+    .gl-dot:nth-child(1) { animation-delay: 0s; }
+    .gl-dot:nth-child(2) { animation-delay: 0.2s; }
+    .gl-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes gl-bounce {
+        0%, 80%, 100% { transform: scale(0.7); opacity: 0.5; }
+        40%            { transform: scale(1.1); opacity: 1;   }
+    }
+
+    /* Arabic loading text */
+    .gl-text {
+        font-family: 'Cairo', sans-serif !important;
+        font-size: 15px;
+        font-weight: 700;
+        color: #1E3A1A;
+        letter-spacing: 0.2px;
+        margin: 0;
+    }
+    .gl-sub {
+        font-family: 'Cairo', sans-serif !important;
+        font-size: 12px;
+        font-weight: 500;
+        color: #64748b;
+        margin: 0;
+    }
+
+    /* Old .loader-img compatibility */
+    #global-loader .loader-img { display: none !important; }
 
     .linear-background {
         animation-duration: 1.4s;
@@ -1318,12 +1407,8 @@
     }
 
     @keyframes greenShimmer {
-        0% {
-            background-position: -468px 0;
-        }
-        100% {
-            background-position: 468px 0;
-        }
+        0%   { background-position: -468px 0; }
+        100% { background-position:  468px 0; }
     }
 
     /* ==========================================================================

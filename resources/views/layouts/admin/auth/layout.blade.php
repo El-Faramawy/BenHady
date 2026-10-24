@@ -176,27 +176,50 @@
 
         /* Global Loader */
         #global-loader {
+            display: none;
             position: fixed;
             z-index: 50000 !important;
-            background: rgba(255, 255, 255, 0.9) !important;
-            left: 0;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            height: 100%;
-            width: 100%;
-            margin: 0 auto;
-            text-align: center;
+            inset: 0;
+            background: rgba(10, 30, 8, 0.55) !important;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
         }
-
-        .loader-img {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 75px;
-            height: 75px;
+        #global-loader.active {
+            display: flex !important;
         }
+        .gl-box {
+            background: rgba(255,255,255,0.97);
+            border-radius: 20px;
+            padding: 36px 48px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 0 1px rgba(118,196,25,0.2);
+            animation: gl-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        @keyframes gl-pop {
+            from { transform: scale(0.85); opacity: 0; }
+            to   { transform: scale(1);    opacity: 1; }
+        }
+        .gl-car-img {
+            width: 130px;
+            height: auto;
+            display: block;
+            object-fit: contain;
+        }
+        .gl-dots { display: flex; gap: 6px; align-items: center; }
+        .gl-dot { width: 8px; height: 8px; border-radius: 50%; background: #76C419; animation: gl-bounce 1.2s ease-in-out infinite; }
+        .gl-dot:nth-child(1) { animation-delay: 0s; }
+        .gl-dot:nth-child(2) { animation-delay: 0.2s; }
+        .gl-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes gl-bounce { 0%, 80%, 100% { transform: scale(0.7); opacity: 0.5; } 40% { transform: scale(1.1); opacity: 1; } }
+        .gl-text { font-family: 'Cairo', sans-serif !important; font-size: 15px; font-weight: 700; color: #1E3A1A; margin: 0; }
+        .gl-sub  { font-family: 'Cairo', sans-serif !important; font-size: 12px; font-weight: 500; color: #64748b; margin: 0; }
+        #global-loader .loader-img { display: none !important; }
     </style>
 </head>
 
@@ -207,7 +230,16 @@
 
     <!-- GLOABAL LOADER -->
     <div id="global-loader">
-        <img src="{{url('Admin')}}/assets/images/loader.svg" class="loader-img" alt="Loader">
+        <div class="gl-box">
+            <img src="{{url('Admin')}}/imgs/car-loader.gif" alt="جاري التحميل" class="gl-car-img">
+            <div class="gl-dots">
+                <div class="gl-dot"></div>
+                <div class="gl-dot"></div>
+                <div class="gl-dot"></div>
+            </div>
+            <p class="gl-text">جاري التحميل...</p>
+            <p class="gl-sub">يرجى الانتظار</p>
+        </div>
     </div>
     <!-- End GLOABAL LOADER -->
     <!-- PAGE -->

@@ -183,11 +183,11 @@
                 contentType: false,
                 processData: false,
                 beforeSend: function () {
-                    $('#global-loader').show();
+                    $('#global-loader').addClass('active');
                     $btn.prop('disabled', true);
                 },
                 success: function (data) {
-                    $('#global-loader').hide();
+                    $('#global-loader').removeClass('active');
                     $btn.prop('disabled', false);
                     $form.data('is_submitting', false);
                     $('#Modal').modal('hide');
@@ -197,7 +197,7 @@
                     }, 500);
                 },
                 error: function (data) {
-                    $('#global-loader').hide();
+                    $('#global-loader').removeClass('active');
                     $btn.prop('disabled', false);
                     $form.data('is_submitting', false);
                     handleAjaxError(data);
