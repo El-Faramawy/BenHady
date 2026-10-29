@@ -45,7 +45,7 @@ class BrandService
     public function update(Brand $brand, array $data, ?UploadedFile $logo = null): bool
     {
         if ($logo) {
-            $data['logo_url'] = $this->uploadImage($logo, 'brands', $brand->logo_url);
+            $data['logo_url'] = $this->uploadImage($logo, 'brands', $brand->getRawOriginal('logo_url') ?: $brand->logo_url);
         }
 
         return $this->brandRepository->update($brand, $data);

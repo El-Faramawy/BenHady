@@ -28,11 +28,11 @@ class SettingService
     public function update(Setting $setting, array $data, ?UploadedFile $logo = null, ?UploadedFile $favIcon = null): Setting
     {
         if ($logo !== null) {
-            $data['logo'] = $this->uploadImage($logo, 'uploads/setting', $setting->logo);
+            $data['logo'] = $this->uploadImage($logo, 'setting', $setting->getRawOriginal('logo') ?: $setting->logo);
         }
 
         if ($favIcon !== null) {
-            $data['fav_icon'] = $this->uploadImage($favIcon, 'uploads/setting', $setting->fav_icon);
+            $data['fav_icon'] = $this->uploadImage($favIcon, 'setting', $setting->getRawOriginal('fav_icon') ?: $setting->fav_icon);
         }
 
         $this->settingRepository->update($setting, $data);

@@ -261,6 +261,10 @@
             box-sizing: border-box;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
             font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
             background-color: var(--bg-body);
@@ -844,6 +848,10 @@
             .mobile-header {
                 display: flex;
             }
+
+            #content h2, #content h3 {
+                scroll-margin-top: 5rem;
+            }
         }
     </style>
 </head>
@@ -1031,21 +1039,58 @@
                 el.innerHTML = html;
             });
 
-            // Generate Sidebar Navigation from Headings
+            // Slug generator adhering to GitHub Flavored Markdown (GFM) standard
+            function getHeadingSlug(text) {
+                return text
+                    .toLowerCase()
+                    .trim()
+                    .replace(/^(GET|POST|PUT|DELETE)\s+/i, '')
+                    .replace(/[^\w\s-]/g, '')
+                    .replace(/\s/g, '-');
+            }
+
+            // Generate Sidebar Navigation & Assign Exact Anchor IDs to Headings
             const headings = contentDiv.querySelectorAll('h2, h3');
             let navHtml = '';
+            const usedSlugs = new Set();
 
             headings.forEach((h, index) => {
-                // Assign an ID if not present
-                if (!h.id) {
-                    h.id = 'sec-' + h.innerText.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ('sec-' + index);
+                const text = h.innerText.replace(/^(GET|POST|PUT|DELETE)\s+/i, '').trim();
+                let slug = getHeadingSlug(text);
+                if (!slug) {
+                    slug = 'section-' + (index + 1);
+                }
+
+                // Handle potential duplicate slugs
+                if (usedSlugs.has(slug)) {
+                    let counter = 1;
+                    while (usedSlugs.has(`${slug}-${counter}`)) {
+                        counter++;
+                    }
+                    slug = `${slug}-${counter}`;
+                }
+                usedSlugs.add(slug);
+
+                // Assign the exact ID matching Table of Contents anchors
+                h.id = slug;
+
+                // Support single-dash alias for double-dash slugs (e.g. overview--architecture <-> overview-architecture)
+                const singleDash = slug.replace(/-{2,}/g, '-');
+                if (singleDash !== slug && !document.getElementById(singleDash)) {
+                    const aliasSpan = document.createElement('span');
+                    aliasSpan.id = singleDash;
+                    aliasSpan.style.display = 'none';
+                    h.parentNode.insertBefore(aliasSpan, h);
+                }
+
+                // Skip "Table of Contents" from appearing in sidebar tree (sidebar itself is the TOC)
+                if (slug === 'table-of-contents') {
+                    return;
                 }
 
                 const isH2 = h.tagName.toLowerCase() === 'h2';
                 const levelClass = isH2 ? 'level-2' : 'level-3';
-                const text = h.innerText.replace(/^(GET|POST|PUT|DELETE)\s+/i, '').trim();
-
-                navHtml += `<a href="#${h.id}" class="nav-item ${levelClass}" data-title="${text.toLowerCase()}">${text}</a>`;
+                navHtml += `<a href="#${slug}" class="nav-item ${levelClass}" data-title="${text.toLowerCase()}">${text}</a>`;
             });
 
             navTree.innerHTML = navHtml;
@@ -1107,12 +1152,53 @@
                 sidebar.classList.toggle('open');
             });
 
-            // Close mobile sidebar on nav click
-            navTree.addEventListener('click', (e) => {
-                if (e.target.classList.contains('nav-item') && window.innerWidth <= 1024) {
-                    sidebar.classList.remove('open');
+            // Smoothly scroll and handle internal hash anchor links (TOC, Sidebar, in-page links)
+            document.addEventListener('click', (e) => {
+                const link = e.target.closest('a[href^="#"]');
+                if (!link) return;
+
+                const href = link.getAttribute('href');
+                if (!href || href === '#') return;
+
+                const targetId = decodeURIComponent(href.substring(1));
+                const target = document.getElementById(targetId)
+                    || document.getElementById(targetId.replace(/-{2,}/g, '-'))
+                    || document.getElementById(targetId.replace(/-/g, '--'));
+
+                if (target) {
+                    e.preventDefault();
+                    history.pushState(null, '', '#' + targetId);
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                    // Highlight active nav item in sidebar
+                    document.querySelectorAll('.nav-item').forEach(item => {
+                        const itemHref = item.getAttribute('href');
+                        if (itemHref === '#' + targetId || itemHref === '#' + target.id) {
+                            item.classList.add('active');
+                        } else {
+                            item.classList.remove('active');
+                        }
+                    });
+
+                    // Close mobile sidebar if open
+                    if (window.innerWidth <= 1024 && sidebar) {
+                        sidebar.classList.remove('open');
+                    }
                 }
             });
+
+            // Handle direct page load with a hash in URL
+            if (window.location.hash) {
+                const initialHash = decodeURIComponent(window.location.hash.substring(1));
+                const initialTarget = document.getElementById(initialHash)
+                    || document.getElementById(initialHash.replace(/-{2,}/g, '-'))
+                    || document.getElementById(initialHash.replace(/-/g, '--'));
+                if (initialTarget) {
+                    setTimeout(() => {
+                        initialTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 150);
+                }
+            }
 
             // Theme Switcher Event Listeners
             const htmlTag = document.documentElement;

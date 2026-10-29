@@ -12,6 +12,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
+use App\Models\CarImage;
 
 class CarRepository
 {
@@ -334,7 +335,7 @@ class CarRepository
     /**
      * Add an image record to the car.
      */
-    public function addImage(Car $car, string $imagePath, bool $isPrimary = false, int $sortOrder = 0): \App\Models\CarImage
+    public function addImage(Car $car, string $imagePath, bool $isPrimary = false, int $sortOrder = 0): CarImage
     {
         if ($isPrimary) {
             $car->images()->update(['is_primary' => false]);

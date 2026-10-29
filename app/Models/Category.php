@@ -37,6 +37,28 @@ class Category extends Model
         return $this->getLocalized('name');
     }
 
+    public function getImageUrlAttribute(?string $value): ?string
+    {
+        if (empty($value)) {
+            return request()->is('admin*') ? null : get_file(null);
+        }
+
+        return get_file($value);
+    }
+
+    public function getIconAttribute(?string $value): ?string
+    {
+        if (empty($value)) {
+            return request()->is('admin*') ? null : get_file(null);
+        }
+
+        if (str_starts_with($value, 'fa ') || str_starts_with($value, 'fe ') || str_starts_with($value, 'bi ') || str_starts_with($value, 'mdi ') || str_starts_with(trim($value), '<svg')) {
+            return $value;
+        }
+
+        return get_file($value);
+    }
+
     public function cars(): HasMany
     {
         return $this->hasMany(Car::class);

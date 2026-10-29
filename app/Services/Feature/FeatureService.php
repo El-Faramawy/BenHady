@@ -37,7 +37,7 @@ class FeatureService
     public function store(array $data, ?UploadedFile $icon = null): Feature
     {
         if ($icon) {
-            $data['icon'] = $this->uploadImage($icon, 'uploads/features');
+            $data['icon'] = $this->uploadImage($icon, 'features');
         }
 
         return $this->featureRepository->create($data);
@@ -46,7 +46,7 @@ class FeatureService
     public function update(Feature $feature, array $data, ?UploadedFile $icon = null): bool
     {
         if ($icon) {
-            $data['icon'] = $this->uploadImage($icon, 'uploads/features', $feature->icon);
+            $data['icon'] = $this->uploadImage($icon, 'features', $feature->getRawOriginal('icon') ?: $feature->icon);
         }
 
         return $this->featureRepository->update($feature, $data);

@@ -27,6 +27,15 @@ class CarImage extends Model
         ];
     }
 
+    public function getImagePathAttribute(?string $value): ?string
+    {
+        if (empty($value)) {
+            return request()->is('admin*') ? null : get_file(null);
+        }
+
+        return get_file($value);
+    }
+
     public function car(): BelongsTo
     {
         return $this->belongsTo(Car::class);

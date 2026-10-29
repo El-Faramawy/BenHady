@@ -28,13 +28,37 @@ if (!function_exists('get_file')) {
     {
         $defaultImg = asset('Admin/imgs/default.jpg');
 
-        if (empty($file)) {
+        if (empty($file) || (is_string($file) && trim($file) === '')) {
             return $defaultImg;
         }
 
         if (filter_var($file, FILTER_VALIDATE_URL)) {
+            $parsedPath = parse_url($file, PHP_URL_PATH);
+            if ($parsedPath) {
+                // If it points to local storage URL (e.g. http://localhost/storage/...)
+                if (str_contains($parsedPath, '/storage/')) {
+                    $storageRelative = substr($parsedPath, strpos($parsedPath, '/storage/') + 9);
+                    if (
+                        (file_exists(public_path('storage/' . $storageRelative)) && !is_dir(public_path('storage/' . $storageRelative))) ||
+                        (file_exists(storage_path('app/public/' . $storageRelative)) && !is_dir(storage_path('app/public/' . $storageRelative)))
+                    ) {
+                        return $file;
+                    }
+                    return $defaultImg;
+                }
+
+                // If it points to local public file (e.g. Admin/imgs/default.jpg)
+                $trimmedPublic = ltrim($parsedPath, '/');
+                if (file_exists(public_path($trimmedPublic)) && !is_dir(public_path($trimmedPublic))) {
+                    return $file;
+                }
+            }
+
+            // Remote external URL
             return $file;
         }
+
+        $file = ltrim((string) $file, '/');
 
         if (str_starts_with($file, 'storage/')) {
             $relativePath = substr($file, 8);

@@ -17,11 +17,27 @@ trait UploadTrait
 
         // Delete old file if present
         if ($oldPath) {
-            $cleanOld = str_starts_with($oldPath, 'storage/') ? substr($oldPath, 8) : $oldPath;
-            if (Storage::disk('public')->exists($cleanOld)) {
-                Storage::disk('public')->delete($cleanOld);
-            } elseif (file_exists(public_path($oldPath)) && !str_contains($oldPath, 'default.jpg')) {
-                @unlink(public_path($oldPath));
+            $cleanOld = $oldPath;
+            if (filter_var($cleanOld, FILTER_VALIDATE_URL)) {
+                $parsed = parse_url($cleanOld, PHP_URL_PATH);
+                if ($parsed && str_contains($parsed, '/storage/')) {
+                    $cleanOld = substr($parsed, strpos($parsed, '/storage/') + 9);
+                } else {
+                    $cleanOld = ltrim((string) $parsed, '/');
+                }
+            }
+
+            $cleanOld = ltrim($cleanOld, '/');
+            if (str_starts_with($cleanOld, 'storage/')) {
+                $cleanOld = substr($cleanOld, 8);
+            }
+
+            if (!str_contains($cleanOld, 'default.jpg')) {
+                if (Storage::disk('public')->exists($cleanOld)) {
+                    Storage::disk('public')->delete($cleanOld);
+                } elseif (file_exists(public_path($cleanOld))) {
+                    @unlink(public_path($cleanOld));
+                }
             }
         }
 

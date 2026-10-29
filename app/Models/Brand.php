@@ -36,6 +36,15 @@ class Brand extends Model
         return $this->getLocalized('name');
     }
 
+    public function getLogoUrlAttribute(?string $value): ?string
+    {
+        if (empty($value)) {
+            return request()->is('admin*') ? null : get_file(null);
+        }
+
+        return get_file($value);
+    }
+
     public function cars(): HasMany
     {
         return $this->hasMany(Car::class);

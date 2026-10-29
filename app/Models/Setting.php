@@ -51,4 +51,22 @@ class Setting extends Model
     {
         return $this->getLocalized('privacy_policy');
     }
+
+    public function getLogoAttribute(?string $value): ?string
+    {
+        if (empty($value)) {
+            return request()->is('admin*') ? null : get_file(null);
+        }
+
+        return get_file($value);
+    }
+
+    public function getFavIconAttribute(?string $value): ?string
+    {
+        if (empty($value)) {
+            return request()->is('admin*') ? null : get_file(null);
+        }
+
+        return get_file($value);
+    }
 }

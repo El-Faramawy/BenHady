@@ -45,7 +45,7 @@ class CategoryService
     public function update(Category $category, array $data, ?UploadedFile $icon = null): bool
     {
         if ($icon) {
-            $data['icon'] = $this->uploadImage($icon, 'categories/icons', $category->icon);
+            $data['icon'] = $this->uploadImage($icon, 'categories/icons', $category->getRawOriginal('icon') ?: $category->icon);
         }
 
         return $this->categoryRepository->update($category, $data);

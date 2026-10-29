@@ -100,7 +100,7 @@ class CarService
         }
 
         if ($primaryImage !== null) {
-            $path = $this->uploadImage($primaryImage, 'uploads/cars');
+            $path = $this->uploadImage($primaryImage, 'cars');
             if ($path) {
                 $this->carRepository->addImage($car, $path, true, 0);
             }
@@ -109,7 +109,7 @@ class CarService
         if (!empty($galleryImages)) {
             foreach ($galleryImages as $index => $galleryImage) {
                 if ($galleryImage instanceof UploadedFile) {
-                    $path = $this->uploadImage($galleryImage, 'uploads/cars');
+                    $path = $this->uploadImage($galleryImage, 'cars');
                     if ($path) {
                         $this->carRepository->addImage($car, $path, false, $index + 1);
                     }
@@ -150,7 +150,7 @@ class CarService
         }
 
         if ($primaryImage !== null) {
-            $path = $this->uploadImage($primaryImage, 'uploads/cars');
+            $path = $this->uploadImage($primaryImage, 'cars');
             if ($path) {
                 $this->carRepository->addImage($car, $path, true, 0);
             }
@@ -160,7 +160,7 @@ class CarService
             $currentCount = $car->images()->count();
             foreach ($galleryImages as $index => $galleryImage) {
                 if ($galleryImage instanceof UploadedFile) {
-                    $path = $this->uploadImage($galleryImage, 'uploads/cars');
+                    $path = $this->uploadImage($galleryImage, 'cars');
                     if ($path) {
                         $this->carRepository->addImage($car, $path, false, $currentCount + $index + 1);
                     }
