@@ -3,25 +3,39 @@
 
 @push('admin_css')
     <link href="{{url('Admin')}}/assets/plugins/fileuploads/css/fileupload.css" rel="stylesheet" type="text/css" />
+    <style>
+        .cke_notification_warning,
+        .cke_notification {
+            display: none !important;
+        }
+
+        .cke_contents {
+            min-height: 280px !important;
+            height: 280px !important;
+        }
+    </style>
 @endpush
 
 @section('content')
     <x-list.card>
         <x-list.card-header name="إعدادات النظام" :add_button="false" :delete_button="false"></x-list.card-header>
         <div class="card-body">
-            <form id="settingsForm" action="{{ route('settings.update', $setting->id) }}" class="setting_form my_form" method="post" enctype="multipart/form-data" novalidate>
+            <form id="settingsForm" action="{{ route('settings.update', $setting->id) }}" class="setting_form my_form"
+                method="post" enctype="multipart/form-data" novalidate>
                 @csrf
                 @method('PUT')
 
                 <!-- Nav tabs -->
                 <ul class="nav settings-nav-tabs" id="settingTab" role="tablist">
                     <li class="nav-item">
-                        <a class="nav-link active" id="general-tab" data-toggle="tab" href="#general" role="tab" aria-controls="general" aria-selected="true">
+                        <a class="nav-link active" id="general-tab" data-toggle="tab" href="#general" role="tab"
+                            aria-controls="general" aria-selected="true">
                             <i class="fe fe-sliders ml-2"></i>الإعدادات العامة
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" id="pages-tab" data-toggle="tab" href="#pages" role="tab" aria-controls="pages" aria-selected="false">
+                        <a class="nav-link" id="pages-tab" data-toggle="tab" href="#pages" role="tab" aria-controls="pages"
+                            aria-selected="false">
                             <i class="fe fe-file-text ml-2"></i>باقي الإعدادات (الصفحات والسياسات)
                         </a>
                     </li>
@@ -33,19 +47,22 @@
                     <div class="tab-pane fade show active p-2" id="general" role="tabpanel" aria-labelledby="general-tab">
                         <div class="row">
                             <x-form.input class="col-md-12 col-sm-12" title="اسم الموقع" :required="true">
-                                <input type="text" class="form-control form-control-solid" placeholder="اسم الموقع" name="name" value="{{ $setting->name }}" required/>
+                                <input type="text" class="form-control form-control-solid" placeholder="اسم الموقع"
+                                    name="name" value="{{ $setting->name }}" required />
                             </x-form.input>
                         </div>
 
                         <div class="row mt-3">
                             <div class="col-lg-6 col-sm-12 mb-3">
                                 <x-form.file name="الشعار (اللوجو)">
-                                    <input type="file" class="dropify" name="logo" data-default-file="{{ get_file($setting->logo) }}" data-height="200" />
+                                    <input type="file" class="dropify" name="logo"
+                                        data-default-file="{{ get_file($setting->logo) }}" data-height="200" />
                                 </x-form.file>
                             </div>
                             <div class="col-lg-6 col-sm-12 mb-3">
                                 <x-form.file name="صورة المتصفح (Favicon)">
-                                    <input type="file" class="dropify" name="fav_icon" data-default-file="{{ get_file($setting->fav_icon) }}" data-height="200" />
+                                    <input type="file" class="dropify" name="fav_icon"
+                                        data-default-file="{{ get_file($setting->fav_icon) }}" data-height="200" />
                                 </x-form.file>
                             </div>
                         </div>
@@ -53,53 +70,73 @@
 
                     <!-- Tab 2: Remaining Settings (Pages and Policies) -->
                     <div class="tab-pane fade p-2" id="pages" role="tabpanel" aria-labelledby="pages-tab">
-                        <div class="card card-body mb-4 shadow-sm" style="background: #ffffff; border: 1px solid #D8F2B5; border-radius: 12px;">
+                        <div class="card card-body mb-4 shadow-sm"
+                            style="background: #ffffff; border: 1px solid #D8F2B5; border-radius: 12px;">
                             <h5 class="font-weight-bold mb-3 d-flex align-items-center" style="color: #2E5A1C;">
-                                <div class="d-flex align-items-center justify-content-center rounded-circle ml-2 flex-shrink-0" style="width: 34px; height: 34px; background: #F5FDEA; color: #2E5A1C; border: 1px solid #D8F2B5;">
+                                <div class="d-flex align-items-center justify-content-center rounded-circle ml-2 flex-shrink-0"
+                                    style="width: 34px; height: 34px; background: #F5FDEA; color: #2E5A1C; border: 1px solid #D8F2B5;">
                                     <i class="fe fe-info font-size-16"></i>
                                 </div>
                                 من نحن (About Us)
                             </h5>
                             <div class="row">
                                 <x-form.input class="col-md-6 col-sm-12 mb-3" title="من نحن (بالعربية)" :required="false">
-                                    <textarea class="form-control" id="about_us_ar" name="about_us_ar" rows="6" placeholder="اكتب نبذة عن الموقع بالعربية...">{{ $setting->about_us_ar }}</textarea>
+                                    <textarea class="form-control" id="about_us_ar" name="about_us_ar" rows="10"
+                                        placeholder="اكتب نبذة عن الموقع بالعربية...">{{ $setting->about_us_ar }}</textarea>
                                 </x-form.input>
-                                <x-form.input class="col-md-6 col-sm-12 mb-3" title="من نحن (بالإنجليزية)" :required="false">
-                                    <textarea class="form-control" id="about_us_en" dir="ltr" name="about_us_en" rows="6" placeholder="About us in English...">{{ $setting->about_us_en }}</textarea>
+                                <x-form.input class="col-md-6 col-sm-12 mb-3" title="من نحن (بالإنجليزية)"
+                                    :required="false">
+                                    <textarea class="form-control" id="about_us_en" dir="ltr" name="about_us_en" rows="10"
+                                        placeholder="About us in English...">{{ $setting->about_us_en }}</textarea>
                                 </x-form.input>
                             </div>
                         </div>
 
-                        <div class="card card-body mb-4 shadow-sm" style="background: #ffffff; border: 1px solid #D8F2B5; border-radius: 12px;">
+                        <div class="card card-body mb-4 shadow-sm"
+                            style="background: #ffffff; border: 1px solid #D8F2B5; border-radius: 12px;">
                             <h5 class="font-weight-bold mb-3 d-flex align-items-center" style="color: #2E5A1C;">
-                                <div class="d-flex align-items-center justify-content-center rounded-circle ml-2 flex-shrink-0" style="width: 34px; height: 34px; background: #F5FDEA; color: #2E5A1C; border: 1px solid #D8F2B5;">
+                                <div class="d-flex align-items-center justify-content-center rounded-circle ml-2 flex-shrink-0"
+                                    style="width: 34px; height: 34px; background: #F5FDEA; color: #2E5A1C; border: 1px solid #D8F2B5;">
                                     <i class="fe fe-check-circle font-size-16"></i>
                                 </div>
                                 الشروط والأحكام (Terms & Conditions)
                             </h5>
                             <div class="row">
-                                <x-form.input class="col-md-6 col-sm-12 mb-3" title="الشروط والأحكام (بالعربية)" :required="false">
-                                    <textarea class="form-control" id="terms_conditions_ar" name="terms_conditions_ar" rows="6" placeholder="الشروط والأحكام بالعربية...">{{ $setting->terms_conditions_ar }}</textarea>
+                                <x-form.input class="col-md-6 col-sm-12 mb-3" title="الشروط والأحكام (بالعربية)"
+                                    :required="false">
+                                    <textarea class="form-control" id="terms_conditions_ar" name="terms_conditions_ar"
+                                        rows="10"
+                                        placeholder="الشروط والأحكام بالعربية...">{{ $setting->terms_conditions_ar }}</textarea>
                                 </x-form.input>
-                                <x-form.input class="col-md-6 col-sm-12 mb-3" title="الشروط والأحكام (بالإنجليزية)" :required="false">
-                                    <textarea class="form-control" id="terms_conditions_en" dir="ltr" name="terms_conditions_en" rows="6" placeholder="Terms & conditions in English...">{{ $setting->terms_conditions_en }}</textarea>
+                                <x-form.input class="col-md-6 col-sm-12 mb-3" title="الشروط والأحكام (بالإنجليزية)"
+                                    :required="false">
+                                    <textarea class="form-control" id="terms_conditions_en" dir="ltr"
+                                        name="terms_conditions_en" rows="10"
+                                        placeholder="Terms & conditions in English...">{{ $setting->terms_conditions_en }}</textarea>
                                 </x-form.input>
                             </div>
                         </div>
 
-                        <div class="card card-body mb-3 shadow-sm" style="background: #ffffff; border: 1px solid #D8F2B5; border-radius: 12px;">
+                        <div class="card card-body mb-3 shadow-sm"
+                            style="background: #ffffff; border: 1px solid #D8F2B5; border-radius: 12px;">
                             <h5 class="font-weight-bold mb-3 d-flex align-items-center" style="color: #2E5A1C;">
-                                <div class="d-flex align-items-center justify-content-center rounded-circle ml-2 flex-shrink-0" style="width: 34px; height: 34px; background: #F5FDEA; color: #2E5A1C; border: 1px solid #D8F2B5;">
+                                <div class="d-flex align-items-center justify-content-center rounded-circle ml-2 flex-shrink-0"
+                                    style="width: 34px; height: 34px; background: #F5FDEA; color: #2E5A1C; border: 1px solid #D8F2B5;">
                                     <i class="fe fe-lock font-size-16"></i>
                                 </div>
                                 سياسة الخصوصية (Privacy Policy)
                             </h5>
                             <div class="row">
-                                <x-form.input class="col-md-6 col-sm-12 mb-3" title="سياسة الخصوصية (بالعربية)" :required="false">
-                                    <textarea class="form-control" id="privacy_policy_ar" name="privacy_policy_ar" rows="6" placeholder="سياسة الخصوصية بالعربية...">{{ $setting->privacy_policy_ar }}</textarea>
+                                <x-form.input class="col-md-6 col-sm-12 mb-3" title="سياسة الخصوصية (بالعربية)"
+                                    :required="false">
+                                    <textarea class="form-control" id="privacy_policy_ar" name="privacy_policy_ar" rows="10"
+                                        placeholder="سياسة الخصوصية بالعربية...">{{ $setting->privacy_policy_ar }}</textarea>
                                 </x-form.input>
-                                <x-form.input class="col-md-6 col-sm-12 mb-3" title="سياسة الخصوصية (بالإنجليزية)" :required="false">
-                                    <textarea class="form-control" id="privacy_policy_en" dir="ltr" name="privacy_policy_en" rows="6" placeholder="Privacy policy in English...">{{ $setting->privacy_policy_en }}</textarea>
+                                <x-form.input class="col-md-6 col-sm-12 mb-3" title="سياسة الخصوصية (بالإنجليزية)"
+                                    :required="false">
+                                    <textarea class="form-control" id="privacy_policy_en" dir="ltr" name="privacy_policy_en"
+                                        rows="10"
+                                        placeholder="Privacy policy in English...">{{ $setting->privacy_policy_en }}</textarea>
                                 </x-form.input>
                             </div>
                         </div>
@@ -122,7 +159,15 @@
     <script src="{{url('Admin')}}/assets/plugins/fileuploads/js/file-upload.js"></script>
     <script src="https://cdn.ckeditor.com/4.22.1/full/ckeditor.js"></script>
     <script>
+        if (typeof CKEDITOR !== 'undefined') {
+            CKEDITOR.config.versionCheck = false;
+        }
+
         $(document).ready(function () {
+            if (typeof CKEDITOR !== 'undefined') {
+                CKEDITOR.config.versionCheck = false;
+            }
+
             var editors = [
                 { id: 'about_us_ar', dir: 'rtl', lang: 'ar' },
                 { id: 'about_us_en', dir: 'ltr', lang: 'en' },
@@ -135,6 +180,7 @@
             editors.forEach(function (item) {
                 if ($('#' + item.id).length) {
                     CKEDITOR.replace(item.id, {
+                        versionCheck: false,
                         contentsLangDirection: item.dir,
                         language: item.lang,
                         height: 280,
@@ -158,7 +204,7 @@
                 if (typeof CKEDITOR !== 'undefined') {
                     for (var instance in CKEDITOR.instances) {
                         if (CKEDITOR.instances.hasOwnProperty(instance)) {
-                            CKEDITOR.instances[instance].resize();
+                            CKEDITOR.instances[instance].resize('100%', 280);
                         }
                     }
                 }
