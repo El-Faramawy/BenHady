@@ -38,4 +38,13 @@ class CarController extends Controller
             ->setData($car)
             ->create();
     }
+
+    public function branches(int $id): JsonResponse
+    {
+        $branches = $this->carService->getCarBranches($id);
+
+        return (new ApiResponse())
+            ->setData($branches)
+            ->create();
+    }
 }

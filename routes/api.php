@@ -33,6 +33,7 @@ Route::middleware(['api', 'lang'])->group(function () {
     Route::get('home', HomeController::class);
     Route::get('cars', [CarController::class, 'index']);
     Route::get('cars/{id}', [CarController::class, 'show']);
+    Route::get('cars/{id}/branches', [CarController::class, 'branches']);
     Route::get('categories', [CategoryController::class, 'index']);
     Route::get('brands', [BrandController::class, 'index']);
     Route::get('cities', [CityController::class, 'index']);
@@ -48,7 +49,7 @@ Route::middleware(['api', 'lang'])->group(function () {
     Route::middleware('auth:api')->group(function () {
         Route::post('auth/logout', [AuthController::class, 'logout']);
         Route::get('auth/me', [UserController::class, 'me']);
-        Route::put('user/profile', [UserController::class, 'updateProfile']);
+        Route::match(['put', 'post'], 'user/profile', [UserController::class, 'updateProfile']);
         Route::delete('auth/account', [UserController::class, 'deleteAccount']);
         Route::get('notifications', [NotificationController::class, 'index']);
         Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount']);

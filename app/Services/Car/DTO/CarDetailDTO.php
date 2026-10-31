@@ -11,6 +11,7 @@ readonly class CarDetailDTO
     public function __construct(
         public int $id,
         public ?int $cityId = null,
+        public ?int $branchId = null,
     ) {
     }
 
@@ -19,6 +20,7 @@ readonly class CarDetailDTO
         return new self(
             id: $id,
             cityId: $request->filled('city_id') ? (int) $request->input('city_id') : null,
+            branchId: $request->filled('branch_id') ? (int) $request->input('branch_id') : null,
         );
     }
 }

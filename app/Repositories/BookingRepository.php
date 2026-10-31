@@ -9,6 +9,7 @@ use App\Exceptions\Booking\BookingNotFoundException;
 use App\Models\Booking;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Carbon;
 
 class BookingRepository
 {
@@ -85,6 +86,47 @@ class BookingRepository
         }
 
         return $query->exists();
+    }
+
+    /**
+     * Get booked calendar dates (Y-m-d) for a car starting from today onwards.
+     *
+     * @return array<int, string>
+     */
+    public function getBookedDaysForCar(int $carId, int $branchId): array
+    {
+        $today = Carbon::today();
+
+        $bookings = $this->model->newQuery()
+            ->where('car_id', $carId)
+            ->where('pickup_branch_id', $branchId)
+            ->whereNotIn('status', [
+                BookingStatusEnum::CANCELLED->value,
+                BookingStatusEnum::COMPLETED->value,
+            ])
+            ->where('return_at', '>=', $today)
+            ->get(['pickup_at', 'return_at']);
+
+        $bookedDays = [];
+
+        foreach ($bookings as $booking) {
+            $start = Carbon::parse($booking->pickup_at)->startOfDay();
+            $end = Carbon::parse($booking->return_at)->startOfDay();
+
+            if ($start->lt($today)) {
+                $start = $today->copy();
+            }
+
+            while ($start->lte($end)) {
+                $bookedDays[] = $start->toDateString();
+                $start->addDay();
+            }
+        }
+
+        $uniqueDays = array_values(array_unique($bookedDays));
+        sort($uniqueDays);
+
+        return $uniqueDays;
     }
 
     public function generateBookingNumber(): string

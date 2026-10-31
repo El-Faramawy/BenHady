@@ -34,8 +34,8 @@ class SettingTest extends TestCase
             ->assertJson([
                 'code' => 200,
                 'data' => [
-                    'logo' => 'images/logo.png',
-                    'fav_icon' => 'images/favicon.ico',
+                    'logo' => get_file('images/logo.png'),
+                    'fav_icon' => get_file('images/favicon.ico'),
                     'about_us' => 'عن بن هادي',
                     'terms_conditions' => 'الشروط والأحكام',
                     'privacy_policy' => 'سياسة الخصوصية',

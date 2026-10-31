@@ -103,6 +103,120 @@ class UserApiTest extends TestCase
         $response->assertStatus(422);
     }
 
+    public function test_update_profile_accepts_and_updates_city_id(): void
+    {
+        $user = User::factory()->make([
+            'id' => 1,
+            'name' => 'John Doe',
+        ]);
+
+        $updatedUser = User::factory()->make([
+            'id' => 1,
+            'name' => 'John Doe',
+            'city_id' => 1,
+        ]);
+
+        $this->actingAs($user, 'api');
+
+        $mock = $this->mockService(UserService::class);
+        $mock->shouldReceive('updateProfile')
+            ->once()
+            ->with(\Mockery::on(fn ($dto) => $dto instanceof UpdateProfileDTO && $dto->cityId === 1))
+            ->andReturn($updatedUser);
+
+        $this->mockPresenceVerifier(1);
+
+        $response = $this->putJson('user/profile', [
+            'city_id' => 1,
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'code' => 200,
+                'data' => [
+                    'city_id' => 1,
+                ],
+            ]);
+    }
+
+    public function test_update_profile_fails_validation_with_invalid_city_id(): void
+    {
+        $user = User::factory()->make(['id' => 1]);
+        $this->actingAs($user, 'api');
+
+        $response = $this->putJson('user/profile', [
+            'city_id' => 999999,
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    public function test_update_profile_accepts_city_id_via_multipart_put(): void
+    {
+        $user = User::factory()->make(['id' => 1]);
+        $updatedUser = User::factory()->make(['id' => 1, 'city_id' => 2]);
+        $this->actingAs($user, 'api');
+
+        $mock = $this->mockService(UserService::class);
+        $mock->shouldReceive('updateProfile')
+            ->once()
+            ->with(\Mockery::on(fn ($dto) => $dto instanceof UpdateProfileDTO && $dto->cityId === 2))
+            ->andReturn($updatedUser);
+
+        $this->mockPresenceVerifier(1);
+
+        $boundary = 'testboundary123';
+        $body = "--{$boundary}\r\nContent-Disposition: form-data; name=\"city_id\"\r\n\r\n2\r\n--{$boundary}--\r\n";
+
+        $response = $this->call(
+            'PUT',
+            'user/profile',
+            [],
+            [],
+            [],
+            [
+                'CONTENT_TYPE' => "multipart/form-data; boundary={$boundary}",
+                'HTTP_ACCEPT' => 'application/json',
+            ],
+            $body
+        );
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'code' => 200,
+                'data' => [
+                    'city_id' => 2,
+                ],
+            ]);
+    }
+
+    public function test_update_profile_accepts_post_method(): void
+    {
+        $user = User::factory()->make(['id' => 1]);
+        $updatedUser = User::factory()->make(['id' => 1, 'city_id' => 3]);
+        $this->actingAs($user, 'api');
+
+        $mock = $this->mockService(UserService::class);
+        $mock->shouldReceive('updateProfile')
+            ->once()
+            ->with(\Mockery::on(fn ($dto) => $dto instanceof UpdateProfileDTO && $dto->cityId === 3))
+            ->andReturn($updatedUser);
+
+        $this->mockPresenceVerifier(1);
+
+        $response = $this->postJson('user/profile', [
+            'city_id' => 3,
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'code' => 200,
+                'data' => [
+                    'city_id' => 3,
+                ],
+            ]);
+    }
+
     /**
      * Test DELETE auth/account endpoint returns success with mocked service.
      */

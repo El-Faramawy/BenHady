@@ -7,6 +7,8 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -37,6 +39,7 @@ class User extends Authenticatable implements JWTSubject
         'phone',
         'date_of_birth',
         'type',
+        'city_id',
         'id_number',
         'id_number_end_date',
         'version_number',
@@ -97,7 +100,12 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(Booking::class);
     }
 
-    public function coupons(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function city(): BelongsTo
+    {
+        return $this->belongsTo(City::class);
+    }
+
+    public function coupons(): BelongsToMany
     {
         return $this->belongsToMany(Coupon::class, 'coupon_user')->withTimestamps();
     }

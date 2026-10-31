@@ -62,10 +62,10 @@
                             </h5>
                             <div class="row">
                                 <x-form.input class="col-md-6 col-sm-12 mb-3" title="من نحن (بالعربية)" :required="false">
-                                    <textarea class="form-control" name="about_us_ar" rows="4" placeholder="اكتب نبذة عن الموقع بالعربية...">{{ $setting->about_us_ar }}</textarea>
+                                    <textarea class="form-control" id="about_us_ar" name="about_us_ar" rows="6" placeholder="اكتب نبذة عن الموقع بالعربية...">{{ $setting->about_us_ar }}</textarea>
                                 </x-form.input>
                                 <x-form.input class="col-md-6 col-sm-12 mb-3" title="من نحن (بالإنجليزية)" :required="false">
-                                    <textarea class="form-control" dir="ltr" name="about_us_en" rows="4" placeholder="About us in English...">{{ $setting->about_us_en }}</textarea>
+                                    <textarea class="form-control" id="about_us_en" dir="ltr" name="about_us_en" rows="6" placeholder="About us in English...">{{ $setting->about_us_en }}</textarea>
                                 </x-form.input>
                             </div>
                         </div>
@@ -79,10 +79,10 @@
                             </h5>
                             <div class="row">
                                 <x-form.input class="col-md-6 col-sm-12 mb-3" title="الشروط والأحكام (بالعربية)" :required="false">
-                                    <textarea class="form-control" name="terms_conditions_ar" rows="4" placeholder="الشروط والأحكام بالعربية...">{{ $setting->terms_conditions_ar }}</textarea>
+                                    <textarea class="form-control" id="terms_conditions_ar" name="terms_conditions_ar" rows="6" placeholder="الشروط والأحكام بالعربية...">{{ $setting->terms_conditions_ar }}</textarea>
                                 </x-form.input>
                                 <x-form.input class="col-md-6 col-sm-12 mb-3" title="الشروط والأحكام (بالإنجليزية)" :required="false">
-                                    <textarea class="form-control" dir="ltr" name="terms_conditions_en" rows="4" placeholder="Terms & conditions in English...">{{ $setting->terms_conditions_en }}</textarea>
+                                    <textarea class="form-control" id="terms_conditions_en" dir="ltr" name="terms_conditions_en" rows="6" placeholder="Terms & conditions in English...">{{ $setting->terms_conditions_en }}</textarea>
                                 </x-form.input>
                             </div>
                         </div>
@@ -96,10 +96,10 @@
                             </h5>
                             <div class="row">
                                 <x-form.input class="col-md-6 col-sm-12 mb-3" title="سياسة الخصوصية (بالعربية)" :required="false">
-                                    <textarea class="form-control" name="privacy_policy_ar" rows="4" placeholder="سياسة الخصوصية بالعربية...">{{ $setting->privacy_policy_ar }}</textarea>
+                                    <textarea class="form-control" id="privacy_policy_ar" name="privacy_policy_ar" rows="6" placeholder="سياسة الخصوصية بالعربية...">{{ $setting->privacy_policy_ar }}</textarea>
                                 </x-form.input>
                                 <x-form.input class="col-md-6 col-sm-12 mb-3" title="سياسة الخصوصية (بالإنجليزية)" :required="false">
-                                    <textarea class="form-control" dir="ltr" name="privacy_policy_en" rows="4" placeholder="Privacy policy in English...">{{ $setting->privacy_policy_en }}</textarea>
+                                    <textarea class="form-control" id="privacy_policy_en" dir="ltr" name="privacy_policy_en" rows="6" placeholder="Privacy policy in English...">{{ $setting->privacy_policy_en }}</textarea>
                                 </x-form.input>
                             </div>
                         </div>
@@ -120,4 +120,49 @@
     @include('layouts.admin.inc.my-form')
     <script src="{{url('Admin')}}/assets/plugins/fileuploads/js/fileupload.js"></script>
     <script src="{{url('Admin')}}/assets/plugins/fileuploads/js/file-upload.js"></script>
+    <script src="https://cdn.ckeditor.com/4.22.1/full/ckeditor.js"></script>
+    <script>
+        $(document).ready(function () {
+            var editors = [
+                { id: 'about_us_ar', dir: 'rtl', lang: 'ar' },
+                { id: 'about_us_en', dir: 'ltr', lang: 'en' },
+                { id: 'terms_conditions_ar', dir: 'rtl', lang: 'ar' },
+                { id: 'terms_conditions_en', dir: 'ltr', lang: 'en' },
+                { id: 'privacy_policy_ar', dir: 'rtl', lang: 'ar' },
+                { id: 'privacy_policy_en', dir: 'ltr', lang: 'en' }
+            ];
+
+            editors.forEach(function (item) {
+                if ($('#' + item.id).length) {
+                    CKEDITOR.replace(item.id, {
+                        contentsLangDirection: item.dir,
+                        language: item.lang,
+                        height: 280,
+                        allowedContent: true,
+                        toolbar: 'Full'
+                    });
+                }
+            });
+
+            $('#settingsForm').on('submit', function () {
+                if (typeof CKEDITOR !== 'undefined') {
+                    for (var instance in CKEDITOR.instances) {
+                        if (CKEDITOR.instances.hasOwnProperty(instance)) {
+                            CKEDITOR.instances[instance].updateElement();
+                        }
+                    }
+                }
+            });
+
+            $('a[data-toggle="tab"]').on('shown.bs.tab', function () {
+                if (typeof CKEDITOR !== 'undefined') {
+                    for (var instance in CKEDITOR.instances) {
+                        if (CKEDITOR.instances.hasOwnProperty(instance)) {
+                            CKEDITOR.instances[instance].resize();
+                        }
+                    }
+                }
+            });
+        });
+    </script>
 @endpush

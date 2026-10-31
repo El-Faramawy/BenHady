@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Exceptions\Car\CarNotFoundException;
+use App\Models\Branch;
 use App\Models\Car;
 use App\Services\Car\DTO\CarFilterDTO;
 use App\Services\Home\DTO\HomeFilterDTO;
@@ -164,6 +165,44 @@ class CarRepository
         }
 
         return $car;
+    }
+
+    /**
+     * Get active branches where the car is available.
+     *
+     * @throws CarNotFoundException
+     * @return Collection<int, Branch>
+     */
+    public function getBranchesByCarId(int $carId): Collection
+    {
+        $car = $this->model
+            ->where('id', $carId)
+            ->where('is_active', true)
+            ->with([
+                'branches' => function ($query) {
+                    $query->where('branches.is_active', true)
+                        ->with('city:id,name_ar,name_en');
+                },
+                'branch' => function ($query) {
+                    $query->where('is_active', true)
+                        ->with('city:id,name_ar,name_en');
+                },
+            ])
+            ->first();
+
+        if (!$car) {
+            throw new CarNotFoundException();
+        }
+
+        $branches = $car->branches;
+
+        if ($branches->isEmpty() && $car->branch) {
+            $branches = new Collection([$car->branch]);
+        } elseif ($car->branch && !$branches->contains('id', $car->branch->id)) {
+            $branches = $branches->prepend($car->branch);
+        }
+
+        return $branches;
     }
 
     /**

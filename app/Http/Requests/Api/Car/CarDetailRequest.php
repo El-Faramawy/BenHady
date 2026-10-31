@@ -17,6 +17,7 @@ class CarDetailRequest extends FormRequest
     {
         return [
             'city_id' => ['nullable', 'integer', 'exists:cities,id'],
+            'branch_id' => ['nullable', 'integer', 'exists:branches,id'],
         ];
     }
 }

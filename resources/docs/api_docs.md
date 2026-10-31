@@ -29,6 +29,7 @@ Welcome to the **BenHady Car Rental API** documentation. This document provides 
 - [4. Cars Catalog](#4-cars-catalog)
     - [4.1 List & Filter Cars](#41-list--filter-cars)
     - [4.2 Car Details](#42-car-details)
+    - [4.3 Car Branches](#43-car-branches)
 - [5. Lookups & Rental Policies](#5-lookups--rental-policies)
     - [5.1 Categories](#51-categories)
     - [5.2 Brands](#52-brands)
@@ -501,6 +502,7 @@ Retrieves current profile details of the authenticated user.
         "phone": "966500000000",
         "date_of_birth": "1992-05-15",
         "type": "national_id",
+        "city_id": 1,
         "id_number": "1020304050",
         "id_number_end_date": "2032-12-31",
         "version_number": "1",
@@ -534,6 +536,7 @@ Updates authenticated user profile fields. Allows updating personal data, identi
 | `phone`                  | String | No          | Updated phone number (unique except current user)        | `966500000001`              |
 | `date_of_birth`          | Date   | No          | Format `Y-m-d`                                           | `1992-05-15`                |
 | `type`                   | Enum   | No          | `national_id`, `resident_id`, or `visitor`               | `national_id`               |
+| `city_id`                | Integer| No          | City ID (must exist in `cities` table)                   | `1`                         |
 | `password`               | String | No          | New password (min: 8 characters, confirmed)              | `NewSecret@123`             |
 | `password_confirmation`  | String | Conditional | Required if `password` is provided                       | `NewSecret@123`             |
 | `driving_license_number` | String | No          | Driving license number                                   | `DL-987654321`              |
@@ -557,6 +560,7 @@ Updates authenticated user profile fields. Allows updating personal data, identi
         "phone": "966500000000",
         "date_of_birth": "1992-05-15",
         "type": "national_id",
+        "city_id": 1,
         "id_number": "1020304050",
         "id_number_end_date": "2032-12-31",
         "version_number": "1",
@@ -751,9 +755,10 @@ Retrieves all details for a single vehicle, including specifications, rental pol
 
 #### Query Parameters
 
-| Parameter | Type    | Required | Description                          |
-| --------- | ------- | -------- | ------------------------------------ |
-| `city_id` | Integer | No       | City context for branch verification |
+| Parameter   | Type    | Required | Description                                                                                    | Example |
+| ----------- | ------- | -------- | ---------------------------------------------------------------------------------------------- | ------- |
+| `city_id`   | Integer | No       | Filter available branches located in this city                                                 | `1`     |
+| `branch_id` | Integer | No       | Branch ID context to retrieve booked calendar days starting from today onwards (format: Y-m-d) | `1`     |
 
 #### Success Response (`200 OK`)
 
@@ -762,18 +767,30 @@ Retrieves all details for a single vehicle, including specifications, rental pol
     "code": 200,
     "data": {
         "id": 1,
-        "name_ar": "تويوتا كامري",
-        "name_en": "Toyota Camry",
-        "name": "تويوتا كامري",
-        "daily_price": 180,
-        "weekly_price": 1150,
-        "monthly_price": 4200,
+        "name_ar": "تويوتا كامري 2025",
+        "name_en": "Toyota Camry 2025",
+        "name": "تويوتا كامري 2025",
+        "daily_price": "220.00",
+        "booked_days": [
+            "2026-10-30",
+            "2026-10-31",
+            "2026-11-01"
+        ],
         "branch": {
             "id": 1,
             "name_ar": "فرع طريق الملك فهد",
             "name_en": "King Fahd Road Branch",
             "phone": "966110000000"
         },
+        "branches": [
+            {
+                "id": 1,
+                "city_id": 1,
+                "name_ar": "فرع مطار الملك خالد",
+                "name_en": "King Khalid Airport Branch",
+                "phone": "+966112233441"
+            }
+        ],
         "policies": [
             {
                 "id": 1,
@@ -786,6 +803,81 @@ Retrieves all details for a single vehicle, including specifications, rental pol
     },
     "messages": [],
     "errors": []
+}
+```
+
+> **Note**: The `booked_days` array is included in the response when `branch_id` is supplied in the query string (`cars/{id}?branch_id=1`). It contains all upcoming dates from today onwards in which the vehicle is already booked at that branch.
+
+---
+
+### 4.3 Car Branches
+
+Retrieves all active branches where the specified car is located or available for pickup, along with nested city details and geographic coordinates.
+
+- **Method**: `GET`
+- **URL**: `cars/{id}/branches`
+- **Auth Required**: No
+
+#### Path Variables
+
+| Parameter | Type    | Required | Description |
+| --------- | ------- | -------- | ----------- |
+| `id`      | Integer | Yes      | Car ID      |
+
+#### Success Response (`200 OK`)
+
+```json
+{
+    "code": 200,
+    "data": [
+        {
+            "id": 1,
+            "city_id": 1,
+            "name_ar": "فرع مطار الملك خالد",
+            "name_en": "King Khalid Airport Branch",
+            "address_ar": "مطار الملك خالد الدولي، الصالة 5، الرياض",
+            "address_en": "King Khalid International Airport, Terminal 5, Riyadh",
+            "phone": "+966112233441",
+            "latitude": 24.9576,
+            "longitude": 46.6988,
+            "city": {
+                "id": 1,
+                "name_ar": "الرياض",
+                "name_en": "Riyadh"
+            }
+        },
+        {
+            "id": 2,
+            "city_id": 1,
+            "name_ar": "فرع طريق الملك فهد",
+            "name_en": "King Fahd Road Branch",
+            "address_ar": "طريق الملك فهد، حي العليا، الرياض",
+            "address_en": "King Fahd Road, Al Olaya, Riyadh",
+            "phone": "+966112233442",
+            "latitude": 24.7136,
+            "longitude": 46.6753,
+            "city": {
+                "id": 1,
+                "name_ar": "الرياض",
+                "name_en": "Riyadh"
+            }
+        }
+    ],
+    "messages": [],
+    "errors": []
+}
+```
+
+#### Error Response (`404 Not Found`)
+
+```json
+{
+    "code": 404,
+    "data": null,
+    "messages": [],
+    "errors": [
+        "السيارة غير موجودة"
+    ]
 }
 ```
 

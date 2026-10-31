@@ -9,6 +9,15 @@
         $form.data('is_submitting', true);
 
         var $btn = $form.find(':submit, button.save_setting_btn, button.save_policy_btn');
+
+        if (typeof CKEDITOR !== 'undefined') {
+            for (var instance in CKEDITOR.instances) {
+                if (CKEDITOR.instances.hasOwnProperty(instance)) {
+                    CKEDITOR.instances[instance].updateElement();
+                }
+            }
+        }
+
         var form_data = new FormData(form);
         var url = $form.attr('action');
         var method = ($form.attr('method') || 'POST').toUpperCase();

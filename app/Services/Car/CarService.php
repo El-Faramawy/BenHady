@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Services\Car;
 
+use App\Models\Branch;
 use App\Models\Car;
+use App\Repositories\BookingRepository;
 use App\Repositories\CarRepository;
 use App\Services\Car\DTO\CarDetailDTO;
 use App\Services\Car\DTO\CarFilterDTO;
 use App\Traits\UploadTrait;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\UploadedFile;
 use Yajra\DataTables\DataTables;
@@ -19,8 +22,10 @@ class CarService
 {
     use UploadTrait;
 
-    public function __construct(protected CarRepository $carRepository)
-    {
+    public function __construct(
+        protected CarRepository $carRepository,
+        protected BookingRepository $bookingRepository,
+    ) {
     }
 
     public function getCars(CarFilterDTO $dto): LengthAwarePaginator
@@ -30,11 +35,30 @@ class CarService
 
     public function getCarDetails(CarDetailDTO|int $dto, ?int $cityId = null): Car|array
     {
-        if (is_int($dto)) {
-            return $this->carRepository->findActiveByIdOrFail($dto, $cityId);
+        $carId = is_int($dto) ? $dto : $dto->id;
+        $targetCityId = is_int($dto) ? $cityId : $dto->cityId;
+        $branchId = is_int($dto) ? null : $dto->branchId;
+
+        $car = $this->carRepository->findActiveByIdOrFail($carId, $targetCityId);
+
+        if ($branchId !== null) {
+            $bookedDays = $this->bookingRepository->getBookedDaysForCar($carId, $branchId);
+            if ($car instanceof Car) {
+                $car->setAttribute('booked_days', $bookedDays);
+            } elseif (is_array($car)) {
+                $car['booked_days'] = $bookedDays;
+            }
         }
 
-        return $this->carRepository->findActiveByIdOrFail($dto->id, $dto->cityId);
+        return $car;
+    }
+
+    /**
+     * @return Collection<int, Branch>|SupportCollection<int, mixed>
+     */
+    public function getCarBranches(int $id): Collection|SupportCollection
+    {
+        return $this->carRepository->getBranchesByCarId($id);
     }
 
     /**

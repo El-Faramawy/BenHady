@@ -34,6 +34,7 @@ class UpdateProfileRequest extends BaseFormRequest
             'phone' => ['sometimes', 'string', Rule::unique('users', 'phone')->ignore($userId)],
             'date_of_birth' => 'sometimes|date',
             'type' => ['sometimes', 'string', Rule::in(array_column(UserTypeEnum::cases(), 'value'))],
+            'city_id' => ['sometimes', 'nullable', 'integer', 'exists:cities,id'],
             'password' => 'sometimes|nullable|string|min:8|confirmed',
             'driving_license_number' => 'sometimes|nullable|string',
             'license_expiry_date' => 'sometimes|nullable|date',

@@ -124,4 +124,88 @@ class CarApiTest extends TestCase
                 'data' => null,
             ]);
     }
+
+    public function test_car_show_accepts_branch_id_and_returns_booked_days(): void
+    {
+        $this->mockPresenceVerifier(1);
+
+        $mockCar = [
+            'id' => 1,
+            'name_en' => 'Toyota Camry 2025',
+            'booked_days' => ['2026-10-30', '2026-10-31'],
+        ];
+
+        $mock = $this->mockService(CarService::class);
+        $mock->shouldReceive('getCarDetails')
+            ->once()
+            ->with(Mockery::on(fn($dto) => $dto instanceof CarDetailDTO && $dto->id === 1 && $dto->branchId === 1))
+            ->andReturn($mockCar);
+
+        $response = $this->getJson('cars/1?branch_id=1');
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'code' => 200,
+                'data' => [
+                    'id' => 1,
+                    'booked_days' => ['2026-10-30', '2026-10-31'],
+                ],
+            ]);
+    }
+
+    public function test_car_branches_endpoint_returns_branches_for_car(): void
+    {
+        $mockBranches = [
+            [
+                'id' => 1,
+                'name_ar' => 'فرع المطار',
+                'name_en' => 'Airport Branch',
+            ],
+            [
+                'id' => 2,
+                'name_ar' => 'فرع العليا',
+                'name_en' => 'Olaya Branch',
+            ],
+        ];
+
+        $mock = $this->mockService(CarService::class);
+        $mock->shouldReceive('getCarBranches')
+            ->once()
+            ->with(1)
+            ->andReturn(collect($mockBranches));
+
+        $response = $this->getJson('cars/1/branches');
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'code' => 200,
+                'data' => [
+                    [
+                        'id' => 1,
+                        'name_ar' => 'فرع المطار',
+                    ],
+                    [
+                        'id' => 2,
+                        'name_ar' => 'فرع العليا',
+                    ],
+                ],
+            ]);
+    }
+
+    public function test_car_branches_endpoint_returns_404_when_car_not_found(): void
+    {
+        $mock = $this->mockService(CarService::class);
+        $mock->shouldReceive('getCarBranches')
+            ->once()
+            ->with(999)
+            ->andThrow(new CarNotFoundException());
+
+        $response = $this->getJson('cars/999/branches');
+
+        $response->assertStatus(404)
+            ->assertJson([
+                'code' => 404,
+                'data' => null,
+            ]);
+    }
 }
